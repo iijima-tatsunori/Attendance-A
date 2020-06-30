@@ -10,17 +10,27 @@
 # coding: utf-8
 
 User.create!(name: "管理者",
-             email: "admin-user@email.com",
+             email: "admin@email.com",
              password: "password",
              password_confirmation: "password",
              admin: true)
 
-60.times do |n|
-  name  = Faker::Name.name
-  email = "sample-#{n+1}@email.com"
-  password = "password"
-  User.create!(name: name,
-               email: email,
-               password: password,
-               password_confirmation: password)
-end
+User.create!(name: "社長",
+             email: "president@email.com",
+             password: "password",
+             password_confirmation: "password")
+             
+User.create!(name: "支店長",
+             email: "manager@email.com",
+             password: "password",
+             password_confirmation: "password")
+
+User.create!(name: "一般　仁",
+             email: "general-1@email.com",
+             password: "password",
+             password_confirmation: "password")
+             
+User.create!(name: "遅刻田　寝流与",
+             email: "general-2@email.com",
+             password: "password",
+             password_confirmation: "password")

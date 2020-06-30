@@ -2,25 +2,32 @@
 <div>
   <table class="table table-bordered table-condensed user-table">
     <tr>
-      <td>【<%= l(@first_day, format: :middle) %>】時間管理表</td>
-      <td>指定勤務時間：<%= format_basic_info(@user.work_time) %></td>
-      <td>基本時間：<%= format_basic_info(@user.basic_time) %></td>
-      <td>月初日：<%= l(@first_day, format: :short) %></td>
+      <td>
+        <%= link_to "←", user_path(date: @first_day.prev_month), class: "btn btn-primary" %>
+        <%= "　" %>
+        <%= l(@first_day, format: :middle) %><%= "　" %>時間管理表
+        <%= "　" %>
+        <%= link_to "→", user_path(date: @first_day.next_month), class: "btn btn-primary" %>
+      </td>
+      <td>
+        指定勤務開始時間<%= "　" %><%= format_basic_info(@user.work_time) %>
+        指定勤務終了時間
+      </td>
+      <td>基本時間<%= "　" %><%= format_basic_info(@user.basic_time) %></td>
+      <td>初日<%= "　" %><%= l(@first_day, format: :short2) %></td>
     </tr>
 
     <tr>
-      <td>所属：<%= @user.department.present? ? @user.department : "未所属" %></td>
-      <td>名前：<%= @user.name %></td>
-      <td>出勤日数：<%= @worked_sum %>日</td>
-      <td>月末日：<%= l(@last_day, format: :short) %></td>
+      <td>所属<%= "　" %><%= @user.affiliation.present? ? @user.affiliation : "未所属" %></td>
+      <td>名前<%= "　" %><%= @user.name %></td>
+      <td>出勤日数<%= "　" %>：<%= @worked_sum %>日</td>
+      <td>末日<%= "　" %><%= l(@last_day, format: :short2) %></td>
     </tr>
   </table>
 </div>
 
 <div class="btn-user-show">
-  <%= link_to "⇦ 前月へ", user_path(date: @first_day.prev_month), class: "btn btn-info" %>
-  <%= link_to "１ヶ月の勤怠情報編集へ", attendances_edit_one_month_user_path(date: @first_day), class: "btn btn-success" %>
-  <%= link_to "次月へ ⇨", user_path(date: @first_day.next_month), class: "btn btn-info" %>
+  
 </div>
 
 
@@ -28,21 +35,54 @@
   <table class="table table-bordered table-condensed table-hover" id="table-attendances">
     <thead>
       <tr>
-        <th>日付</th>
-        <th>曜日</th>
-        <th>勤怠登録</th>
-        <th>出勤時間</th>
-        <th>退勤時間</th>
-        <th>在社時間</th>
-        <th>備考</th>
+        <td rowspan="3">残業申請</td>
+        <td rowspan="3">日付</td>
+        <td rowspan="3">曜日</td>
+        <td colspan="8">実績</td>
+        <td colspan="5">所定外勤務</td>
+      </tr>
+      <tr>
+        <td colspan="3">出社</td>
+        <td colspan="3">退社</td>
+        <td rowspan="2">在社時間</td>
+        <td rowspan="2">備考</td>
+        <td colspan="2">終了予定時間</td>
+        <td rowspan="2">時間外時間</td>
+        <td rowspan="2">業務処理内容</td>
+        <td rowspan="2">指示者確認</td>
+      </tr>
+      <tr>
+        <td>時</td>
+        <td>分</td>
+        <td></td>
+        <td>時</td>
+        <td>分</td>
+        <td></td>
+        <td>時</td>
+        <td>分</td>
       </tr>
     </thead>
 
     <tbody>
       <% @attendances.each do |day| %>
         <tr>
+          <%= form_with(model: @user, url: attendances_update_one_month_user_path(date: @first_day), local: true, method: :patch) do |f| %>
+            <td><%= f.submit "残業申請", class: "btn btn-primary" %></td>
+          <% end %>
           <td><%= l(day.worked_on, format: :short) %></td>
-          <td><%= $days_of_the_week[day.worked_on.wday] %></td>
+          <td>
+          <% if day.worked_on.wday == 0 %>
+            <font color="RED">
+              <%= $days_of_the_week[day.worked_on.wday] %>
+            </font>
+          <% elsif day.worked_on.wday == 6 %>
+            <font color="BLUE">
+              <%= $days_of_the_week[day.worked_on.wday] %>
+            </font>
+          <% else %>
+            <%= $days_of_the_week[day.worked_on.wday] %>
+          <% end %>
+          </td>
           <td>
             <% if btn_text = attendance_state(day) %>
               <%= link_to "#{btn_text}登録", user_attendance_path(@user, day), method: :patch, class: "btn btn-primary btn-attendances "%>
@@ -57,21 +97,38 @@
             <% end %>
             </td>
           <td><%= day.note %></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
         </tr>
       <% end %>
     </tbody>
     <tfoot>
-      <!--rowspan:縦結合、colspan：横結合-->
       <tr>
-        <td colspan="2">累計日数</td>
-        <td colspan="2">総合勤務時間</td>
-        <td colspan="2">累計在社時間</td>
-        <td rowspan="2"></td>
-      </tr>
-      <tr>
-        <td colspan="2"><%= @attendances.count %></td>
-        <td colspan="2"><%= format_basic_info(@user.work_time).to_f * @worked_sum %></td>
-        <td colspan="2"><%= format("%.2f", @total_working_times.to_f) %></td>
+        <td></td>
+        <td colspan="2"></td>
+        <td colspan="6"></td>
+        <td><%= format("%.2f", @total_working_times.to_f) %></td>
+        <td colspan="5"></td>
+        <%= form_with(model: @user, url: attendances_update_one_month_user_path(date: @first_day), local: true, method: :patch) do |f| %>
+          <td>
+            所属長承認<%= " " %>
+            <% if @user.department.present? %>
+              <%= "上長Bに申請中" %>
+            <% else %>
+              <%= "未" %>
+            <% end %>
+            <br />
+            <%= f.select :name, [["", 0],["上長B", 1],["上長A", 2]] %>
+            <br />
+            <%= f.submit "申請", class: "btn btn-primary" %>
+          </td>
+        <% end %>
       </tr>
     </tfoot> 
   </table>
