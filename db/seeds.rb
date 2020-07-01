@@ -18,12 +18,14 @@ User.create!(name: "管理者",
 User.create!(name: "社長",
              email: "president@email.com",
              password: "password",
-             password_confirmation: "password")
+             password_confirmation: "password",
+             superior: true)
              
 User.create!(name: "支店長",
              email: "manager@email.com",
              password: "password",
-             password_confirmation: "password")
+             password_confirmation: "password",
+             superior: true)
 
 User.create!(name: "一般　仁",
              email: "general-1@email.com",
