@@ -22,7 +22,7 @@
       <td>所属<%= "　" %><%= @user.affiliation.present? ? @user.affiliation : "未所属" %></td>
       <td>名前<%= "　" %><%= @user.name %></td>
       <td>コード</td>
-      <td></td>
+      <td><%= @user.id %></td>
       <td>出勤日数<%= "　" %>：<%= @worked_sum %>日</td>
       <td>末日<%= "　" %><%= l(@last_day, format: :short2) %></td>
     </tr>
@@ -30,7 +30,7 @@
 </div>
 
 <div class="btn-user-show">
-  
+  <%= link_to "1ヶ月の勤怠編集へ", attendances_edit_one_month_user_path, class: "btn btn-primary" %>
 </div>
 
 
@@ -69,9 +69,7 @@
     <tbody>
       <% @attendances.each do |day| %>
         <tr>
-          <%= form_with(model: @user, url: attendances_update_one_month_user_path(date: @first_day), local: true, method: :patch) do |f| %>
-            <td><%= f.submit "残業申請", class: "btn btn-primary" %></td>
-          <% end %>
+          <td><%= link_to "残業申請", edit_overtime_info_user_attendance_path(@user, date: day.worked_on), remote: true, class: "btn btn-primary" %></td>
           <td><%= l(day.worked_on, format: :short) %></td>
           <td>
           <% if day.worked_on.wday == 0 %>
@@ -94,11 +92,11 @@
           <td><%= l(day.started_at, format: :time) if day.started_at.present? %></td>
           <td><%= l(day.finished_at, format: :time) if day.finished_at.present? %></td>
           <td>
-            <% if day.started_at.present? && day.finished_at.present? %>
-              <%= str_times = working_times(day.started_at, day.finished_at) %>
-              <% @total_working_times = @total_working_times.to_f + str_times.to_f %>
-            <% end %>
-            </td>
+          <% if day.started_at.present? && day.finished_at.present? %>
+            <%= str_times = working_times(day.started_at, day.finished_at) %>
+            <% @total_working_times = @total_working_times.to_f + str_times.to_f %>
+          <% end %>
+          </td>
           <td><%= day.note %></td>
           <td></td>
           <td></td>
@@ -114,12 +112,13 @@
     <tfoot>
       <tr>
         <td></td>
-        <td colspan="2"></td>
-        <td colspan="6"></td>
-        <td><%= format("%.2f", @total_working_times.to_f) %></td>
-        <td colspan="5"></td>
+        <td colspan="2">累計日数</td>
+        <td colspan="6">総合勤務時間</td>
+        <td>累計在社時間</td>
+        <td></td>
+        <td colspan="4", rowspan="2"></td>
         <%= form_with(model: @user, url: attendances_update_one_month_user_path(date: @first_day), local: true, method: :patch) do |f| %>
-          <td>
+          <td rowspan="2">
             所属長承認<%= " " %>
             <% if @user.department.present? %>
               <%= "上長Bに申請中" %>
@@ -133,6 +132,16 @@
           </td>
         <% end %>
       </tr>
+      <tr>
+        <td></td>
+        <td colspan="2"></td>
+        <td colspan="6"></td>
+        <td><%= format("%.2f", @total_working_times.to_f) %></td>
+        <td></td>
+      </tr>
     </tfoot> 
   </table>
 </div>
+
+<!--モーダルウインドウ表示-->
+<div id="edit-overtime-info" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>

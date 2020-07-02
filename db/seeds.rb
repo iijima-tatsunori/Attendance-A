@@ -15,7 +15,7 @@ User.create!(name: "管理者",
              password_confirmation: "password",
              admin: true)
 
-User.create!(name: "社長",
+User.create!(name: "本部長",
              email: "president@email.com",
              password: "password",
              password_confirmation: "password",
