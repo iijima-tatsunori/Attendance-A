@@ -47,6 +47,8 @@ class AttendancesController < ApplicationController
   end
   
   def edit_overtime_info
+    @attendance = Attendance.find_by(params[:id])
+    
   end
   
   def request_overtime
@@ -67,7 +69,7 @@ class AttendancesController < ApplicationController
   end
   
   def request_overtime_params
-    params.require(:user).permit(attendances: [:affiliation, :basic_time, :work_time])
+    params.require(:user).permit(attendances: [:finished_plan_at, :business_process_content, :instructor_confirmation])
   end
   
   # beforeフィルター

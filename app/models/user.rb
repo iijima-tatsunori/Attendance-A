@@ -52,4 +52,47 @@ class User < ApplicationRecord
     update_attribute(:remember_digest, nil)
   end
   
+  def self.import(file)
+    CSV.foreach(file.path, headers: true) do |row|
+      # IDが見つかれば、レコードを呼び出し、見つかれなければ、新しく作成
+      user = find_by(id: row["name"]) || new
+      # CSVからデータを取得し、設定する
+      user.attributes = row.to_hash.slice(*updatable_attributes)
+      # 保存する
+      user.save
+    end
+  end
+  
+  
+  def self.in_working_users
+    in_working_users = Attendance.where(worked_on: Date.today, finished_at: nil).where.not(started_at: nil).pluck(:user_id).uniq
+    where(id: in_working_users)
+  end
+
+
+  
+
+  # 更新を許可するカラムを定義
+  def self.updatable_attributes
+    ["name",
+      "email",
+      "affiliation",
+      "uid",
+      "employee_number",
+      "basic_work_time",
+      "designated_work_start_time",
+      "designated_work_end_time",
+      "superior",
+      "admin",
+      "password"]
+  end
+  
+  
+  
+  
+  
+  
+  
+  
+  
 end
