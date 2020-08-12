@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200702153856) do
+ActiveRecord::Schema.define(version: 20200810040304) do
 
   create_table "attendances", force: :cascade do |t|
     t.date "worked_on"
@@ -24,7 +24,16 @@ ActiveRecord::Schema.define(version: 20200702153856) do
     t.string "business_process_content"
     t.string "instructor_confirmation"
     t.string "apploval_confirmation"
+    t.boolean "next_day", default: false
     t.index ["user_id"], name: "index_attendances_on_user_id"
+  end
+
+  create_table "bases", force: :cascade do |t|
+    t.integer "base_number"
+    t.string "base_name"
+    t.string "attendance_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "users", force: :cascade do |t|
@@ -36,14 +45,14 @@ ActiveRecord::Schema.define(version: 20200702153856) do
     t.string "remember_digest"
     t.boolean "admin", default: false
     t.string "department"
-    t.datetime "basic_time", default: "2020-07-08 23:00:00"
-    t.datetime "work_time", default: "2020-07-08 22:30:00"
+    t.datetime "basic_time", default: "2020-07-18 23:00:00"
+    t.datetime "work_time", default: "2020-07-18 22:30:00"
     t.string "affiliation"
     t.integer "employee_number"
     t.integer "uid"
-    t.datetime "basic_work_time", default: "2020-07-08 23:00:00"
-    t.datetime "designated_work_start_time", default: "2020-07-09 01:00:00"
-    t.datetime "designated_work_end_time", default: "2020-07-09 09:00:00"
+    t.datetime "basic_work_time", default: "2020-07-18 23:00:00"
+    t.datetime "designated_work_start_time", default: "2020-07-19 01:00:00"
+    t.datetime "designated_work_end_time", default: "2020-07-19 09:00:00"
     t.boolean "superior", default: false
     t.index ["email"], name: "index_users_on_email", unique: true
   end

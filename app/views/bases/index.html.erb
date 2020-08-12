@@ -1,0 +1,41 @@
+<%= provide(:title, '拠点一覧') %>
+
+<h1>拠点一覧</h1>
+
+<div>
+  <table class="table table-bordered table-condensed table-hover" id="table-attendances">
+    
+    <thead>
+      <tr>
+        <th></th>
+        <th></th>
+        <th>拠点番号</th>
+        <th>拠点名</th>
+        <th>勤怠種類</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% @bases.each do |base| %>
+      
+      <tr>
+        <td><%= link_to "修正", edit_basis_path(base), class: "btn btn-primary" %></td>
+        <td><%= link_to "削除", base, method: :delete, class: "btn btn-primary" %></td>
+        <td><%= base.base_number %></td>
+        <td><%= base.base_name %></td>
+        <td><%= base.attendance_type %></td>
+      </tr>
+        
+      <% end %>
+    </tbody>
+    
+  </table>
+</div>
+
+<div class="panel-group">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <%= link_to "拠点情報追加", new_basis_path, class: "btn btn-primary" %>
+    </div>
+  </div>
+</div>

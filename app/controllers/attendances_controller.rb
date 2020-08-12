@@ -1,9 +1,9 @@
 class AttendancesController < ApplicationController
   
-  before_action :set_user, only: [:edit_one_month, :update_one_month, :edit_overtime_info, :request_overtime]
+  before_action :set_user, only: [:edit_one_month, :update_one_month]
   before_action :logged_in_user, only: [:update, :edit_one_month, :edit_overtime_info, :request_overtime]
   before_action :admin_or_correct_user, only: [:update, :edit_one_month, :update_one_month]
-  before_action :set_one_month, only: :edit_one_month
+  before_action :set_one_month, only: [:edit_one_month]
   
   
   
@@ -47,18 +47,32 @@ class AttendancesController < ApplicationController
   end
   
   def edit_overtime_info
-    @attendance = Attendance.find_by(params[:id])
     
+    @attendance = Attendance.find(params[:attendance_id])
+    @user = User.find(@attendance.user_id)
   end
   
   def request_overtime
-    if @user.update_attributes(request_overtime_params)
-      flash[:success] = "#{@user.name}の基本情報を更新しました。"
+    
+    @attendance = Attendance.find(params[:attendance_id])
+    @user = User.find(@attendance.user_id)
+    
+    if params[:next_day] == '1'
+      @attendance.finished_plan_at = @attendance.finished_plan_at + 24.0
+    end 
+    
+    if @attendance.update_attributes(request_overtime_params)
+      flash[:success] = "残業申請を送信しました。"
+      redirect_to @user
     else
-      flash[:danger] = "#{@user.name}の更新は失敗しました。<br>" + @user.errors.full_messages.join("<br>")
+      flash[:danger] = "無効な入力データがあった為、更新をキャンセルしました。"
+      redirect_to @user
     end
-    redirect_to users_url
+    
+    
+    
   end
+  
   
   
   
@@ -69,7 +83,7 @@ class AttendancesController < ApplicationController
   end
   
   def request_overtime_params
-    params.require(:user).permit(attendances: [:finished_plan_at, :business_process_content, :instructor_confirmation])
+    params.require(:user).permit(attendances: [:finished_plan_at, :business_process_content, :next_day , :instructor_confirmation])[:attendances]
   end
   
   # beforeフィルター

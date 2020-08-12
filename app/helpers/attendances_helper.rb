@@ -11,4 +11,12 @@ module AttendancesHelper
   def working_times(start, finish)
     format("%.2f", (((finish - start) / 60) / 60.0))
   end
+  
+  def next_day_times(finish, finished_plan)
+    
+    format("%.2f", (((finished_plan - finish) / 60) / 60.0))
+    
+  end
+  
+  
 end
