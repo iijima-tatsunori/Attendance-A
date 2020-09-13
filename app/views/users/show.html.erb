@@ -28,22 +28,43 @@
   </table>
 </div>
 
-<div class="btn-user-show">
-  <% if nil? %>
-    <%= link_to "【所属長承認申請のお知らせ】", attendances_edit_one_month_user_path %>
-  <% else %>
-   【所属長承認申請のお知らせ】
-  <% end %>
-    <br>
-  <%= link_to "【勤務変更申請のお知らせ】", attendances_edit_one_month_user_path %>
-    <br>
-  <%= link_to "【残業申請のお知らせ】", attendances_edit_one_month_user_path %>
-    <br>
-  <%= link_to "勤怠を編集", attendances_edit_one_month_user_path, class: "btn btn-primary" %>
-  <%= link_to "CSV出力", user_path(format: :csv), class: "btn btn-primary" %>
-    <br>
-  <%= link_to "勤怠修正ログ（承認済）", "#", class: "btn btn-primary" %>
-</div>
+
+<% if current_user.superior? && current_user?(@user) %>
+  <div class="btn-user-show">
+    
+    
+    <p>
+      【所属長勤怠申請のお知らせ】
+      <% unless has_month_apply.count == 0 %>
+        <%= link_to "#{has_month_apply.count}件の通知があります", attendances_monthly_confirmation_form_user_path(@user), remote: true, class: "notice-superior" %>
+      <% end %>
+    </p>
+    
+    <p>
+      【勤怠変更申請のお知らせ】
+      <% unless has_change_apply.count == 0 %>
+        <%= link_to "#{has_change_apply.count}件の通知があります", attendances_change_apply_form_user_path(@user), class: "notice-superior" %>
+      <% end %>
+    </p>
+    
+            
+    <p>
+      【残業申請のお知らせ】
+      <% unless has_overtime_apply.count == 0 %>
+        <%= link_to "#{has_overtime_apply.count}件の通知があります", attendances_overtime_superior_reply_user_path(@user), remote: true, class: "notice-superior" %>
+      <% end %>
+    </p>
+    
+  </div>
+<% end %>
+    
+    <%= link_to "勤怠を編集", attendances_edit_one_month_user_path, class: "btn btn-primary" %>
+    <%= link_to "CSV出力", user_path(format: :csv), class: "btn btn-primary" %>
+      <br>
+    <%= link_to "勤怠修正ログ（承認済）", "#", class: "btn btn-primary" %>
+          
+
+
 
 
 <div>
@@ -83,7 +104,7 @@
     <tbody>
       <% @attendances.each do |day| %>
         <tr>
-          <td><%= link_to "残業申請", user_attendance_edit_overtime_info_path(@user, day), class: "btn btn-primary" %></td>
+          <td><%= link_to "残業申請", attendances_edit_overtime_info_user_path(date: day.worked_on), remote: true, class: "btn btn-primary" if current_user?(@user) %></td>
           <td><%= l(day.worked_on, format: :short) %></td>
           
           <td>
@@ -123,12 +144,18 @@
           
           
           <td><%= l(day.finished_plan_at, format: :hour) if day.finished_plan_at.present? %></td>
-          <td><%= l(day.finished_plan_at, format: :minute) if day.finished_plan_at.present? %></td>
+          <td><%= l(day.finished_plan_at.floor_to(15.minutes), format: :minute) if day.finished_plan_at.present? %></td>
           <td>
-            <%= next_day_times(day.started_at, day.finished_plan_at) if day.started_at && day.finished_plan_at.present? %>
+            <%= day.overtime_hours.to_d.floor(1).to_f if day.finished_plan_at.present? %>
           </td>
           <td><%= day.business_process_content %></td>
-          <td><%= day.instructor_confirmation %></td>
+          <td>
+            <% unless day.overtime_status == "申請中" %>
+              <%= "勤怠編集#{day.overtime_status}" if day.overtime_status.present? %>
+            <% else %>
+              <%= "#{day.overtime_superior_name}に申請中" %>
+            <% end %>
+          </td>
           
         </tr>
       <% end %>
@@ -139,24 +166,12 @@
         <th colspan="2">累計日数</th>
         <th colspan="5">総合勤務時間</th>
         <th>累計在社時間</th>
-        
         <td colspan="5", rowspan="2"></td>
-        <%= form_with(model: @user, url: attendances_update_one_month_user_path(date: @first_day), local: true, method: :patch) do |f| %>
-          
-          <td rowspan="2">
-            所属長承認<%= " " %>
-            <% if @user.department.present? %>
-              <%= "上長Bに申請中" %>
-            <% else %>
-              <%= "未" %>
-            <% end %>
-            <br>
-            <%= f.select :name, [["", 0],["上長B", 1],["上長A", 2]] %>
-            <br>
-            <%= f.submit "申請", class: "btn btn-primary" %>
-          </td>
-          
-        <% end %>
+        <td rowspan="2">
+          <div class="application-form">
+            <%= render 'month_apply_form' %>
+          </div>
+        </td>
       </tr>
       <tr>
         <td></td>
@@ -171,6 +186,7 @@
 
 <!--モーダルウインドウ表示-->
 <div id="edit-overtime-info" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
-
+<div id="overtime_superior_reply" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+<div id="monthly_confirmation_form" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
 
 

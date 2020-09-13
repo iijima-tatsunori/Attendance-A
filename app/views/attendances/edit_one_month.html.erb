@@ -7,10 +7,12 @@
       <tr>
         <th>日付</th>
         <th>曜日</th>
-        <th>出勤時間</th>
-        <th>退勤時間</th>
+        <th>出社</th>
+        <th>退社</th>
+        <th>翌日</th>
         <th>在社時間</th>
         <th>備考</th>
+        <th>指示者確認&#x329E;</th>
       </tr>
     </thead>
     <tbody>
@@ -19,31 +21,49 @@
           <tr>
             <td><%= l(day.worked_on, format: :short) %></td>
             <td>
-            <% if day.worked_on.wday == 0 %>
-              <font color="RED">
+              <% if day.worked_on.wday == 0 %>
+                <font color="RED">
+                  <%= $days_of_the_week[day.worked_on.wday] %>
+                </font>
+              <% elsif day.worked_on.wday == 6 %>
+                <font color="BLUE">
+                  <%= $days_of_the_week[day.worked_on.wday] %>
+                </font>
+              <% else %>
                 <%= $days_of_the_week[day.worked_on.wday] %>
-              </font>
-            <% elsif day.worked_on.wday == 6 %>
-              <font color="BLUE">
-                <%= $days_of_the_week[day.worked_on.wday] %>
-              </font>
-            <% else %>
-              <%= $days_of_the_week[day.worked_on.wday] %>
-            <% end %>
+              <% end %>
             </td>
-            <% if !current_user.admin? && (Date.current < day.worked_on) %>
-              <td><%= attendance.time_field :started_at, readonly: true, class: "form-control" %></td>
-              <td><%= attendance.time_field :finished_at, readonly: true, class: "form-control" %></td>
+            <% if Date.current <= day.worked_on && day.finished_at.blank? %>
+              <td><%= attendance.time_field :changed_started_at, readonly: true, class: "form-control" %></td>
+              <td><%= attendance.time_field :changed_finished_at, readonly: true, class: "form-control" %></td>
             <% else %>
-              <td><%= attendance.time_field :started_at, class: "form-control" %></td>
-              <td><%= attendance.time_field :finished_at, class: "form-control" %></td>
+              <td><%= attendance.time_field :changed_started_at, class: "form-control" %></td>
+              <td><%= attendance.time_field :changed_finished_at, class: "form-control" %></td>
             <% end %>
             <td>
-            <% if day.started_at.present? && day.finished_at.present? %>
-              <%= working_times(day.started_at, day.finished_at) %>
-            <% end %>
+              <%= attendance.check_box :change_next_day %>
             </td>
-            <td><%= attendance.text_field :note, class: "form-control" %></td>
+            <td>
+              <% if day.changed_started_at.present? && day.changed_finished_at.present? %>
+                <%= format("%.2f", change_working_times(day.changed_started_at, day.changed_finished_at, day.change_next_day)) %>
+              <% end %>
+            </td>
+            <td>
+              <%= attendance.text_field :note, placeholder: "入力必須", class: "form-control" %>
+            </td>
+            <td>
+              <% if Date.current <= day.worked_on && day.finished_at.blank? %>
+                <%= attendance.collection_select :change_superior_id, @superiors, :id, :name,
+                    {include_blank: true, selected: nil}, disabled: true, class: "form-control" %>
+              <% else %>
+                <%= attendance.collection_select :change_superior_id, @superiors, :id, :name,
+                    {include_blank: true, selected: nil}, class: "form-control" %>
+              <% end %>
+              <%= attendance.hidden_field :change_status, value: "申請中" %>
+              <%= attendance.hidden_field :change_approval, value: 2 %>
+              <%= attendance.hidden_field :change_check, value: "0" %>
+              <%= attendance.hidden_field :calendar_day, value: day.worked_on.to_date %>
+            </td>
           </tr>
         <% end %>
       <% end %>
@@ -52,7 +72,7 @@
 </div>
 
 <div class="center">
-  <%= f.submit "まとめて更新", class: "btn btn-lg btn-primary" %>
+  <%= f.submit "編集を保存する", class: "btn btn-lg btn-primary" %>
   <%= link_to "キャンセル", user_path(date: @first_day), class: "btn btn-lg btn-default" %>
 </div>
 <% end %>

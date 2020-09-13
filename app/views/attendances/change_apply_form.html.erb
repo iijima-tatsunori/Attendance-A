@@ -1,0 +1,18 @@
+<div class="modal-dialog modal-lg modal-dialog-center">
+  <div class="modal-content">
+    <div class="modal-body">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true"><%= link_to"&times;".html_safe, "#{@url}" %></span>
+      </button>
+      <div class="row">
+        <div class="col-md-12">
+          <%= form_with(model: @user, url: attendances_reply_change_apply_user_path(@user), local: true, method: :patch) do |f| %>
+            <% @users.each do |user| %>
+              
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

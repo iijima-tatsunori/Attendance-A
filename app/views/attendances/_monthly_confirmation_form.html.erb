@@ -1,0 +1,66 @@
+<div class="modal-dialog modal-lg modal-dialog-center">
+  <div class="modal-content">
+    <div class="modal-body">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true"><%= link_to"&times;".html_safe, "#{@url}" %></span>
+      </button>
+      <div class="row">
+        <div class="col-md-12">
+          <%= form_with(model: @user, url: attendances_apply_monthly_confirmation_user_path(@user), local: true, method: :patch) do |f| %>
+            <% @users.each do |user| %>
+            
+              <% attendances = Attendance.where(user_id: user.id).where(status: "申請中") %>
+              <% attendances.each do |attendance| %>
+                <% if attendance.month_apply.present? && attendance.superior_id == current_user.id && attendance.month_approval == 2 %>
+                  <h3 class="center">【<%= user.name %>からの1ヶ月分の勤怠申請】</h3>
+                  <table class="table table-condensed table-bordered table-hover">
+                    <thead>
+                      <tr>
+                        <th class="center">月</th>
+                        <th class="center">指示者確認<%= "\u329e" %></th>
+                        <th class="center">変更</th>
+                        <th class="center">勤怠を確認する</th>
+                      </tr>
+                    </thead>
+                <% break %>
+                <% end %>
+              <% end %>
+              
+              <% attendances = Attendance.where(user_id: user.id).where(status: "申請中").merge(Attendance.order("attendances.worked_on DESC")) %>
+              <% attendances.each do |attendance| %>
+                <% if attendance.month_apply.present? && attendance.superior_id == current_user.id && attendance.month_approval == 2 %>
+                  <%= fields_for "attendances[]", attendance do |at| %>
+                    <tbody>
+                      <tr>
+                        <td class="center"><%= attendance.month_apply.strftime("%-m月") %></td>
+                        <td class="center">
+                          <%= at.select :status, ["なし", "申請中", "承認", "否認"], {}, class: "form_control" %>
+                        </td>
+                        <td class="center">
+                            <%= at.check_box :month_check %>
+                            <%= at.hidden_field :month_approval, value: 3 %>
+                        </td>
+                        <td class="center">
+                            <%= link_to "確認", user_path(id: user.id, date: attendance.month_apply), class: "btn btn-primary" %>
+                        </td>
+                      </tr>
+                    </tbody>
+                  <% end %>
+                <% end %>
+              <% end %>
+              
+              </table>
+            <% end %>
+            <div class="center">
+              <% if has_month_apply.count == 0 %>
+                 <h1>申請情報はありません。</h1>
+               <% else %>
+                 <%=  f.submit "変更を送信する", class: "btn btn-lg btn-primary" %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

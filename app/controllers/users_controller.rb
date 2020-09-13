@@ -23,6 +23,9 @@ class UsersController < ApplicationController
   end
   
   def show
+    @superiors = superior_without_me
+    @superiors_all = superior_add_me
+    @month = set_one_month_apply
     
     @worked_sum = @attendances.where.not(started_at: nil).count
     @users = User.all

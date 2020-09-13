@@ -1,0 +1,45 @@
+<% if current_user?(@user) %>
+  <%= form_with(model: @user, url: attendances_request_month_apply_user_path(date: @first_day), local: true, mehtod: :patch) do |f| %>
+    <div class="form_group">
+      <% @superiors.each do |superior| %>
+      <% @month.each do |month| %>
+        <%= fields_for "attendances[]", month do |m| %>
+          <% if month.status.blank? %>
+            <%= "所属長承認 #{apply_status(month.status)}"%>
+          <% else %>
+            <%= "所属長承認 #{month.superior_name}#{apply_status(month.status)}" %>
+          <% end %>
+          <%= m.collection_select :superior_id, @superiors, :id, :name, {include_blank: true, selected: nil}, {class: "form-control"} %>
+          <%= m.hidden_field :status, value: "申請中" %>
+          <%= m.hidden_field :month_apply, value: @first_day %>
+          <%= m.hidden_field :month_approval, value: 2 %>
+          <%= m.hidden_field :month_check, value: "0" %>
+        <% end %>
+        <% break %>
+      <% end %>
+      <% break %>
+      <% end %>
+    </div>
+    <div>
+      <% @attendances.each do |attendance| %>
+        <% if Date.today.at_end_of_month > attendance.worked_on %>
+          <% @month.each do |month| %>
+            <%= f.submit "#{apply_btn_status(month.status)}", data: { confirm: "申請情報を提出しますか？" }, class: "btn btn-primary btn-block" %>
+          <% break %>
+        <% end %>
+        <% else %>
+          <%= f.submit "申請", class: "btn btn-primary btn-block", disabled: true %>
+      <% end %>
+      <% break %>
+      <% end %>
+    </div>
+  <% end %>
+<% else %>
+  <% @month.each do |month| %>
+     <% @superiors_all.each do |superior| %>
+       <% if month.superior_id == superior.id %>
+         <%= "所属長承認 #{month.superior_name}#{apply_status(month.status)}" %>
+       <% end %>
+     <% end %>
+  <% end %>
+<% end %>

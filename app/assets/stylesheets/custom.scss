@@ -75,6 +75,33 @@ p {
   text-align: center;
 }
 
+
+
+
+
+/* show */
+.notice-superior {
+  border: solid 2px #ff0000;
+  color: #ff0000;
+  font-weight: bold;
+}
+
+.notice-superior:hover {
+  border: solid 2px #f96250;
+  color: #f96250;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.form-control {
+  margin-bottom: 2px;
+}
+
+
+
+
+
+
 /* debug */
 
 .debug_dump {
