@@ -1,0 +1,59 @@
+<h1>勤怠ログ</h1>
+
+<%= form_tag(attendances_attendance_log_user_path, method: :get) do %>
+  
+  <div class="col-md-2 search-group">
+    <%= date_select :search, 'worked_on', {start_year: @start_year, end_year: @end_year, discard_day: true, prompt: {year: "年", month: "月"}}, class: "form-control" %>
+  </div>
+  <div>
+    <%= submit_tag "検索", worked_on: :nil, class: "btn btn-primary search-btn" %>
+  </div>
+<% end %>
+  
+<div>
+  
+  <table class="table table-condensed table-bordered table-hover">
+    <thead>
+      <tr>
+        <td class="center">日付</td>
+        <td class="center">変更前出社時間</td></td>
+        <td class="center">変更前退社時間</td>
+        <td class="center">変更後出社</td>
+        <td class="center">変更後退社</td>
+        <td class="center">指示者</td>
+        <td class="center">承認日</td>
+      </tr>
+    </thead>
+    
+    <tbody>
+    <% @logs.each do |day| %>
+      <% unless params[:search].blank? %>
+        <% if day.worked_on.year.to_i == @search_year.to_i && day.worked_on.month.to_i == @search_month.to_i  %>
+          <tr>
+            <td class="center"><%= day.worked_on.strftime("%F") %></td>
+            <td class="center"><%= day.started_at&.strftime("%R") %></td>
+            <td class="center"><%= day.finished_at&.strftime("%R") %></td>
+            <td class="center"><%= day.changed_started_at&.strftime("%R") %></td>
+            <td class="center"><%= day.changed_finished_at&.strftime("%R") %></td>
+            <td class="center"><%= day.change_superior_name %></td>
+            <td class="center"><%= day.approval_date&.strftime("%F") %></td>
+          </tr>
+        <% end %>
+      <% else %>
+        
+        <tr>
+          <td class="center"><%= day.worked_on&.strftime("%F") %></td>
+          <td class="center"><%= day.started_at&.strftime("%R") %></td>
+          <td class="center"><%= day.finished_at&.strftime("%R") %></td>
+          <td class="center"><%= day.changed_started_at&.strftime("%R") %></td>
+          <td class="center"><%= day.changed_finished_at&.strftime("%R") %></td>
+          <td class="center"><%= day.change_superior_name %></td>
+          <td class="center"><%= day.approval_date&.strftime("%F") %></td>
+        </tr>
+        
+      <% end %>
+    <% end %>
+    </tbody>
+  </table>
+    
+</div>

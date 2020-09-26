@@ -3,11 +3,20 @@ class AttendancesController < ApplicationController
   before_action :set_user, only: [:edit_one_month, :update_one_month, :edit_overtime_info,
                                   :request_month_apply, :request_overtime, :overtime_superior_reply,
                                   :request_overtime_reply, :monthly_confirmation_form, :apply_monthly_confirmation,
-                                  :change_apply_form, :request_month_apply
-                                  ]
+                                  :change_apply_form, :reply_change_apply, :attendance_log]
+                                  
   before_action :logged_in_user, only: [:update, :edit_one_month, :edit_overtime_info, :request_overtime]
-  before_action :admin_or_correct_user, only: [:update, :edit_one_month, :update_one_month]
-  before_action :set_one_month, only: [:edit_one_month, :edit_overtime_info, :request_overtime]
+  
+  before_action :admin_or_correct_user, only: [:update,
+                                               :edit_one_month,
+                                               :update_one_month,]
+                                               
+  before_action :set_one_month, only: [:edit_one_month, :edit_overtime_info, :request_overtime, :attendance_log]
+  
+  before_action :invalid_admin_user, only: [:update, :edit_one_month, :request_month_apply, :update_one_month, :edit_overtime_info,
+                                            :request_month_apply, :request_overtime, :overtime_superior_reply,
+                                            :request_overtime_reply, :monthly_confirmation_form, :apply_monthly_confirmation,
+                                            :change_apply_form, :reply_change_apply, :attendance_log]
   
   
   
@@ -77,7 +86,7 @@ class AttendancesController < ApplicationController
   end
   
   
-  
+  # 勤怠変更申請
   def edit_one_month
     @superiors = superior_without_me
   end
@@ -85,7 +94,6 @@ class AttendancesController < ApplicationController
   def update_one_month
     ActiveRecord::Base.transaction do
       if attendances_invalid?
-        
         attendances_params.each do |id, item|
           attendance = Attendance.find(id)
           if item[:change_superior_id].present?
@@ -93,7 +101,7 @@ class AttendancesController < ApplicationController
             attendance.update_attributes!(change_superior_name: User.find(item[:change_superior_id]).name)
           end
         end
-        flash[:success] = "1ヶ月分の勤怠変更を申請しました。"
+        flash[:success] = "勤怠変更申請しました。"
         redirect_to user_url(date: params[:date])
       else
         flash[:danger] = "#{INVALID_MSG}#{@msg}"
@@ -105,11 +113,35 @@ class AttendancesController < ApplicationController
     redirect_to attendances_edit_one_month_user_url(date: params[:date])
   end
   
+  
+  
+  # 勤怠変更承認
   def change_apply_form
     @users = change_apply_employee
   end
   
-  def request_month_apply
+  def reply_change_apply
+    ActiveRecord::Base.transaction do
+      change_reply_params.each do |id, item|
+        if apply_confirmed_invalid?(item[:change_status], item[:change_check])
+          attendance = Attendance.find(id)
+          item[:approval_date] = Time.current
+          attendance.update_attributes(item)
+          if item[:change_status] == "否認"
+            item[:change_approval] = 2
+            item[:change_check] = "0"
+            item[:approval_date] = nil
+            attendance.update_attributes(item)
+          end
+        end
+      end
+    end
+    
+    flash[:success] = "勤怠変更の決裁を更新しました。"
+    redirect_to user_path(date: params[:date])
+  rescue ActiveRecord::RecordInvalid
+    flash[:danger] = "エラーが発生した為、更新がキャンセルされました。"
+    redirect_to root_path
   end
   
   
@@ -168,6 +200,32 @@ class AttendancesController < ApplicationController
     redirect_to root_path
   end
   
+  
+  
+  def attendance_log
+    @users = User.where.not(admin: true)
+    @superior = superior_add_me
+    
+    if Attendance.where(user_id: @user.id).where.not(calendar_day: nil).present?
+      @start_year = Attendance.where(user_id: @user.id).minimum(:calendar_day).year
+      @end_year = Attendance.where(user_id: @user.id).maximum(:calendar_day).year
+    end
+    
+    @logs =
+    if params[:search].blank?
+      Attendance.where(user_id: @user.id).where(worked_on: @first_day..@last_day).where(change_approval: 3).order(worked_on: "ASC")
+    else
+      search_years = ActiveSupport::HashWithIndifferentAccess.new(worked_on: params[:search]["worked_on(1i)"])
+      search_months = ActiveSupport::HashWithIndifferentAccess.new(worked_on: params[:search]["worked_on(2i)"])
+      @search_year = search_years[:worked_on]
+      @search_month = search_months[:worked_on]
+      Attendance.where(user_id: @user.id).search(params[:search]["worked_on(1i)"]).search(params[:search]["worked_on(2i)"]).where(change_approval: 3).order(worked_on: "ASC")
+    end
+  end
+  
+  
+  
+  
   private
   
   # 1ヶ月の勤怠申請
@@ -196,6 +254,11 @@ class AttendancesController < ApplicationController
                                                :change_check,
                                                :calendar_day
                                                ])[:attendances]
+  end
+  
+  # 勤怠変更申請承認
+  def change_reply_params
+    params.permit(attendances: [:change_status, :change_approval, :change_check])[:attendances]
   end
   
   def request_overtime_params

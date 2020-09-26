@@ -34,11 +34,11 @@
               <% end %>
             </td>
             <% if Date.current <= day.worked_on && day.finished_at.blank? %>
-              <td><%= attendance.time_field :changed_started_at, readonly: true, class: "form-control" %></td>
-              <td><%= attendance.time_field :changed_finished_at, readonly: true, class: "form-control" %></td>
+              <td><%= attendance.time_select :changed_started_at, {include_blank: true}, disabled: true, class: "form-control bootstrap-date" %></td>
+              <td><%= attendance.time_select :changed_finished_at, {include_blank: true}, disabled: true, class: "form-control bootstrap-date" %></td>
             <% else %>
-              <td><%= attendance.time_field :changed_started_at, class: "form-control" %></td>
-              <td><%= attendance.time_field :changed_finished_at, class: "form-control" %></td>
+              <td><%= attendance.time_select :changed_started_at, {include_blank: true}, class: "form-control bootstrap-date" %></td>
+              <td><%= attendance.time_select :changed_finished_at, {include_blank: true}, class: "form-control bootstrap-date" %></td>
             <% end %>
             <td>
               <%= attendance.check_box :change_next_day %>

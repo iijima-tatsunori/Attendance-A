@@ -33,6 +33,19 @@ module AttendancesHelper
     end
   end
   
+  def change_apply_status(status)
+    case status
+      when "申請中"
+        "申請中"
+      when "承認"
+        "承認済"
+      when "否認"
+        "否認"
+    else
+      "申請"
+    end
+  end
+  
   
   # 1ヶ月勤怠申請先の上長の選択されているか？
   def selected_superior?
@@ -61,12 +74,8 @@ module AttendancesHelper
   end
   
   def time_select_invalid?(item)
-    item[:overtime_superior_id].present? && item["started_at(4i)"] == "" && item["started_at(5i)"] == "" && item["finished_at(4i)"] == "" && item["finished_at(5i)"] == ""
+    item[:change_superior_id].present? && item["started_at(4i)"] == "" && item["started_at(5i)"] == "" && item["finished_at(4i)"] == "" && item["finished_at(5i)"] == ""
   end
-  
-  
-  
-  
   
   
   def attendances_invalid?
@@ -80,19 +89,19 @@ module AttendancesHelper
             @msg = "備考を入力してください。"
           end
           break
-        # elsif item[:change_superior_id].present? && item[:note].present? && item['changed_started_at(4i)'] == "" && item['changed_started_at(5i)'] == "" && item['changed_finished_at(4i)'] == "" && item['changed_finished_at(5i)'] == ""
-        #   attendances = false
-        #   break
-        # elsif item[:change_superior_id].present? && item[:note].present? && item['changed_started_at(4i)'] == "" || item['changed_started_at(5i)'] == "" || item['changed_finished_at(4i)'] == "" || item['changed_finished_at(5i)'] == ""
-        #   attendances = false
-        #   break
-        # elsif item['changed_started_at(4i)'] > item['changed_finished_at(4i)'] && item[:change_next_day_check] == "0"
-        #   attendances = false
-        #   break
-        # elsif
-        #   item['changed_started_at(4i)'] == item['changed_finished_at(4i)'] && item['changed_started_at(5i)'] > item['changed_finished_at(5i)'] && item[:change_next_day_check] == "0"
-        #   attendances = false
-        #   break
+        elsif item[:change_superior_id].present? && item[:note].present? && item['changed_started_at(4i)'] == "" && item['changed_started_at(5i)'] == "" && item['changed_finished_at(4i)'] == "" && item['changed_finished_at(5i)'] == ""
+          attendances = false
+          break
+        elsif item[:change_superior_id].present? && item[:note].present? && item['changed_started_at(4i)'] == "" || item['changed_started_at(5i)'] == "" || item['changed_finished_at(4i)'] == "" || item['changed_finished_at(5i)'] == ""
+          attendances = false
+          break
+        elsif item['changed_started_at(4i)'] > item['changed_finished_at(4i)'] && item[:change_next_day] == "0"
+          attendances = false
+        break
+        elsif
+          item['changed_started_at(4i)'] == item['changed_finished_at(4i)'] && item['changed_started_at(5i)'] > item['changed_finished_at(5i)'] && item[:change_next_day] == "0"
+          attendances = false
+          break
         end
       end
     return attendances
@@ -106,7 +115,7 @@ module AttendancesHelper
       min = finish.min - start.min
       @change_total_working_time = hour + min / 60.00
     elsif
-      hour = finish.hour + start.hour
+      hour = finish.hour - start.hour
       min = finish.min - start.min
       @change_total_working_time = hour + min / 60.00
     end

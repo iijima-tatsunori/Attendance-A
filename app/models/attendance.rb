@@ -5,14 +5,6 @@ class Attendance < ApplicationRecord
   validates :note, length: { maximum: 50 }
   validates :business_process_content, length: { maximum: 50}
   
-  
-  
-  
-  
-  
-  
-  
-  
   validate :finished_at_is_invalid_without_a_started_at
   validate :started_at_than_finished_at_fast_in_invalid
   
@@ -26,7 +18,16 @@ class Attendance < ApplicationRecord
     end
   end
   
-  
+  def self.search(search)
+    return Attendance.all unless search
+    # 開発環境
+    if Rails.env.development? || Rails.env.test?
+      Attendance.where(['worked_on LIKE ?', "%#{search}%"])
+    else Rails.env.production?
+      # 本番環境
+      Attendance.where(['worked_on::text LIKE ?', "%#{search}%"])
+    end
+  end
   
   
   

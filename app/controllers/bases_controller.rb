@@ -1,5 +1,6 @@
 class BasesController < ApplicationController
   before_action :set_base, only: [:edit, :update, :destroy]
+  before_action :admin_user, only: [:new, :create, :index, :edit, :update, :destroy,]
   
   def new
     @base = Base.new

@@ -43,7 +43,7 @@
     <p>
       【勤怠変更申請のお知らせ】
       <% unless has_change_apply.count == 0 %>
-        <%= link_to "#{has_change_apply.count}件の通知があります", attendances_change_apply_form_user_path(@user), class: "notice-superior" %>
+        <%= link_to "#{has_change_apply.count}件の通知があります", attendances_change_apply_form_user_path(@user), remote: true, class: "notice-superior" %>
       <% end %>
     </p>
     
@@ -61,7 +61,7 @@
     <%= link_to "勤怠を編集", attendances_edit_one_month_user_path, class: "btn btn-primary" %>
     <%= link_to "CSV出力", user_path(format: :csv), class: "btn btn-primary" %>
       <br>
-    <%= link_to "勤怠修正ログ（承認済）", "#", class: "btn btn-primary" %>
+    <%= link_to "勤怠修正ログ（承認済）", attendances_attendance_log_user_path(date: @first_day), class: "btn btn-primary" %>
           
 
 
@@ -104,7 +104,11 @@
     <tbody>
       <% @attendances.each do |day| %>
         <tr>
-          <td><%= link_to "残業申請", attendances_edit_overtime_info_user_path(date: day.worked_on), remote: true, class: "btn btn-primary" if current_user?(@user) %></td>
+          <% if current_user.id == @user.id %>
+            <td><%= link_to "残業申請", attendances_edit_overtime_info_user_path(date: day.worked_on), remote: true, class: "btn btn-primary" if current_user?(@user) %></td>
+          <% else %>
+            <td></td>
+          <% end %>
           <td><%= l(day.worked_on, format: :short) %></td>
           
           <td>
@@ -155,6 +159,11 @@
             <% else %>
               <%= "#{day.overtime_superior_name}に申請中" %>
             <% end %>
+            <% unless day.change_status == "申請中" %>
+              <%= "勤怠編集#{change_apply_status(day.change_status)}" if day.change_status.present? %>
+            <% else %>
+              <%= "#{day.change_superior_name}に申請中" %>
+            <% end %>
           </td>
           
         </tr>
@@ -188,5 +197,6 @@
 <div id="edit-overtime-info" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
 <div id="overtime_superior_reply" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
 <div id="monthly_confirmation_form" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+<div id="change_apply_form" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
 
 

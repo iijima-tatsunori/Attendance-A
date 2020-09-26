@@ -3,9 +3,9 @@ require 'csv'
 class UsersController < ApplicationController
   before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
-  before_action :admin_user, only: [:edit, :update, :destroy, :edit_basic_info, :update_basic_info]
+  before_action :admin_user, only: [:edit, :update, :index, :destroy, :edit_basic_info, :update_basic_info, :coming]
   before_action :set_one_month, only: :show
-  
+  before_action :invalid_admin_user, only: :show
   
   def new
     @user = User.new
@@ -28,47 +28,52 @@ class UsersController < ApplicationController
     @month = set_one_month_apply
     
     @worked_sum = @attendances.where.not(started_at: nil).count
-    @users = User.all
+    @csv_export = @user.attendances.where(change_approval: 3).order(:worked_on)
     respond_to do |format|
       format.html
       format.csv do |csv|
-        send_users_csv(@users)
+        send_attendances_csv(@csv_export)
       end
     end
   end
   
-  def send_users_csv(users)
+  def send_attendances_csv(csv_export)
     csv_data = CSV.generate do |csv|
-      header = %w(name email affiliation employee_number uid basic_work_time designated_work_start_time designated_work_start_time superior admin password)
+      header = %w(日付 変更前出社時間 変更前退社時間 変更後出社時間 変更後退社時間 承認者)
       csv << header
 
-      @users.each do |user|
-        values = [user.name,
-                  user.email,
-                  user.affiliation,
-                  user.employee_number,
-                  user.uid,
-                  l(user.basic_work_time, format: :time),
-                  l(user.designated_work_start_time, format: :time),
-                  l(user.designated_work_end_time, format: :time),
-                  user.superior,
-                  user.admin,
-                  user.password]
+      @csv_export.each do |attendance|
+        values = [attendance.worked_on,
+                  attendance.started_at&.strftime("%R"),
+                  attendance.finished_at&.strftime("%R"),
+                  attendance.changed_started_at&.strftime("%R"),
+                  attendance.changed_finished_at&.strftime("%R"),
+                  attendance.change_superior_name
+                  ]
         csv << values
       end
 
     end
-    send_data(csv_data, filename: "users.csv")
+    send_data(csv_data, filename: "attendances.csv")
   end
   
   def index
-    @users = User.all
+    @users = User.where.not(admin: true)
   end
   
   def import
-    # fileはtmpに自動で一時保存される
-    User.import(params[:file])
-    redirect_to users_url
+    if params[:csv_file].blank?
+      flash[:danger] = "csvファイルを選択して下さい。"
+      redirect_to users_url
+    else
+      num = User.import(params[:csv_file])
+      if num > 0
+        flash[:success] = "新規作成に成功しました。"
+        redirect_to users_url
+      else
+        flash[:danger] = "読み込みエラーが発生しました。"
+      end
+    end
   end
   
   def edit

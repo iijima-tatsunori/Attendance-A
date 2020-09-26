@@ -9,9 +9,6 @@ Rails.application.routes.draw do
   post   '/login', to: 'sessions#create'
   delete '/logout', to: 'sessions#destroy'
 
-  #CSVのインポート
-  post '/import_csv', to: 'users#import_csv'
-
   resources :users do
     
     member do
@@ -33,6 +30,7 @@ Rails.application.routes.draw do
       get 'attendances/monthly_confirmation_form'
       patch 'attendances/apply_monthly_confirmation'
       
+      get 'attendances/attendance_log'
       
       
       # 残業申請
@@ -45,9 +43,9 @@ Rails.application.routes.draw do
     
     collection do
       get :coming
+      post :import
     end
     
-    collection { post :import }
     resources :attendances, only: :update
       
   end

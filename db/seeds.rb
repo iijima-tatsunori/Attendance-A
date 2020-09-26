@@ -17,31 +17,31 @@ User.create!(name: "管理者",
              employee_number: 1,
              admin: true)
 
-User.create!(name: "本部長",
-             email: "general-manager@email.com",
+User.create!(name: "上長1",
+             email: "superior1@email.com",
              password: "password",
              password_confirmation: "password",
              affiliation: "フリーランス部",
              employee_number: 2,
              superior: true)
              
-User.create!(name: "支店長",
-             email: "branch-manager@email.com",
+User.create!(name: "上長2",
+             email: "superior2@email.com",
              password: "password",
              password_confirmation: "password",
              affiliation: "フリーランス部",
              employee_number: 3,
              superior: true)
 
-User.create!(name: "一般　仁",
-             email: "general-1@email.com",
+User.create!(name: "一般1",
+             email: "general1@email.com",
              password: "password",
              password_confirmation: "password",
              affiliation: "フリーランス部",
              employee_number: 4)
              
-User.create!(name: "遅刻田　寝流与",
-             email: "general-2@email.com",
+User.create!(name: "一般2",
+             email: "general2@email.com",
              password: "password",
              password_confirmation: "password",
              affiliation: "フリーランス部",
