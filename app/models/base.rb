@@ -3,6 +3,7 @@ class Base < ApplicationRecord
                           uniqueness: true
                     
   validates :base_name, presence: true, length: { maximum: 10 }
+  validates :attendance_type, presence: true
                     
                     
                     
