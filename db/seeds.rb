@@ -10,7 +10,7 @@
 # coding: utf-8
 
 User.create!(name: "管理者",
-             email: "admin@email.com",
+             email: "sample@email.com",
              password: "password",
              password_confirmation: "password",
              affiliation: "自由人",
