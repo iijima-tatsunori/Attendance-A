@@ -100,7 +100,7 @@ class AttendancesController < ApplicationController
         flash[:success] = "勤怠変更申請しました。"
         redirect_to user_url(date: params[:date])
       else
-        flash[:danger] = "false"
+        flash[:danger] = "#{INVALID_MSG}#{@msg}"
         redirect_to attendances_edit_one_month_user_url(date: params[:date])
       end
     end
