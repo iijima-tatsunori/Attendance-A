@@ -4,7 +4,7 @@
       <% @superiors.each do |superior| %>
       <% @month.each do |month| %>
         <%= fields_for "attendances[]", month do |m| %>
-          <% if month.status.blank? %>
+          <% if month.status.blank? || month.status == "なし" %>
             <%= "所属長承認 #{apply_status(month.status)}"%>
           <% else %>
             <%= "所属長承認 #{month.superior_name}#{apply_status(month.status)}" %>

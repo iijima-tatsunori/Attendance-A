@@ -9,11 +9,16 @@ Rails.application.routes.draw do
   post   '/login', to: 'sessions#create'
   delete '/logout', to: 'sessions#destroy'
 
+  # 拠点情報
+  resources :bases
+  
   resources :users do
     
     member do
       get 'edit_basic_info'
       patch 'update_basic_info'
+      
+      get 'basic_edit'
       
       # 勤怠変更申請
       get 'attendances/edit_one_month'
@@ -50,8 +55,7 @@ Rails.application.routes.draw do
       
   end
   
-  # 拠点情報
-  resources :bases
+  
     
   
   

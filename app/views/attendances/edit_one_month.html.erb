@@ -36,34 +36,33 @@
             <% if Date.current <= day.worked_on && day.finished_at.blank? %>
               <td><%= attendance.time_select :changed_started_at, {include_blank: true}, disabled: true, class: "form-control bootstrap-date" %></td>
               <td><%= attendance.time_select :changed_finished_at, {include_blank: true}, disabled: true, class: "form-control bootstrap-date" %></td>
+              <td><%= attendance.check_box :change_next_day, disabled: true %></td>
+              <td></td>
+              <td><%= attendance.text_field :note, disabled: true, class: "form-control" %></td>
+              <td>
+                <%= attendance.collection_select :change_superior_id, @superiors, :id, :name,
+                                                 {include_blank: true}, disabled: true, class: "form-control" %>
+                
+              </td>
             <% else %>
               <td><%= attendance.time_select :changed_started_at, {include_blank: true}, class: "form-control bootstrap-date" %></td>
               <td><%= attendance.time_select :changed_finished_at, {include_blank: true}, class: "form-control bootstrap-date" %></td>
+              <td><%= attendance.check_box :change_next_day %></td>
+              <td>
+                <% if day.changed_started_at.present? && day.changed_finished_at.present? %>
+                  <%= format("%.2f", change_working_times(day.changed_started_at, day.changed_finished_at, day.change_next_day)) %>
+                <% end %>
+              </td>
+              <td><%= attendance.text_field :note, placeholder: "入力必須", class: "form-control" %></td>
+              <td>
+                <%= attendance.collection_select :change_superior_id, @superiors, :id, :name,
+                                                 {include_blank: true}, class: "form-control" %>
+                <%= attendance.hidden_field :change_status, value: "申請中" %>
+                <%= attendance.hidden_field :change_approval, value: 2 %>
+                <%= attendance.hidden_field :change_check, value: "0" %>
+                <%= attendance.hidden_field :calendar_day, value: day.worked_on.to_date %>
+              </td>
             <% end %>
-            <td>
-              <%= attendance.check_box :change_next_day %>
-            </td>
-            <td>
-              <% if day.changed_started_at.present? && day.changed_finished_at.present? %>
-                <%= format("%.2f", change_working_times(day.changed_started_at, day.changed_finished_at, day.change_next_day)) %>
-              <% end %>
-            </td>
-            <td>
-              <%= attendance.text_field :note, placeholder: "入力必須", class: "form-control" %>
-            </td>
-            <td>
-              <% if Date.current <= day.worked_on && day.finished_at.blank? %>
-                <%= attendance.collection_select :change_superior_id, @superiors, :id, :name,
-                    {include_blank: true, selected: nil}, disabled: true, class: "form-control" %>
-              <% else %>
-                <%= attendance.collection_select :change_superior_id, @superiors, :id, :name,
-                    {include_blank: true, selected: nil}, class: "form-control" %>
-              <% end %>
-              <%= attendance.hidden_field :change_status, value: "申請中" %>
-              <%= attendance.hidden_field :change_approval, value: 2 %>
-              <%= attendance.hidden_field :change_check, value: "0" %>
-              <%= attendance.hidden_field :calendar_day, value: day.worked_on.to_date %>
-            </td>
           </tr>
         <% end %>
       <% end %>

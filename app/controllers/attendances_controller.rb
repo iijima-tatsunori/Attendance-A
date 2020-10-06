@@ -7,10 +7,6 @@ class AttendancesController < ApplicationController
                                   
   before_action :logged_in_user, only: [:update, :edit_one_month, :edit_overtime_info, :request_overtime]
   
-  before_action :admin_or_correct_user, only: [:update,
-                                               :edit_one_month,
-                                               :update_one_month,]
-                                               
   before_action :set_one_month, only: [:edit_one_month, :edit_overtime_info, :request_overtime, :attendance_log]
   
   before_action :invalid_admin_user, only: [:update, :edit_one_month, :request_month_apply, :update_one_month, :edit_overtime_info,
@@ -27,13 +23,13 @@ class AttendancesController < ApplicationController
     @user = User.find(params[:user_id])
     @attendance = Attendance.find(params[:id])
     if @attendance.started_at.nil?
-      if @attendance.update_attributes(started_at: Time.current.change(sec: 0))
+      if @attendance.update_attributes(started_at: Time.current.change(sec: 0), changed_started_at: Time.current.change(sec: 0))
         flash[:info] = "おはようございます！"
       else
         flash[:danger] = UPDATE_ERROR_MSG
       end
     elsif @attendance.finished_at.nil?
-      if @attendance.update_attributes(finished_at: Time.current.change(sec: 0))
+      if @attendance.update_attributes(finished_at: Time.current.change(sec: 0), changed_finished_at: Time.current.change(sec: 0))
         flash[:info] = "お疲れ様でした。"
       else
         flash[:danger] = UPDATE_ERROR_MSG
@@ -71,7 +67,7 @@ class AttendancesController < ApplicationController
       if apply_confirmed_invalid?(item[:status], item[:month_check])
       attendance = Attendance.find(id)
       attendance.update_attributes(item)
-        if item[:status] == "否認"
+        if item[:status] == "否認" && item[:status] == "なし"
           item[:month_approval] = 2
           item[:month_check] = "0"
           attendance.update_attributes(item)
@@ -104,7 +100,7 @@ class AttendancesController < ApplicationController
         flash[:success] = "勤怠変更申請しました。"
         redirect_to user_url(date: params[:date])
       else
-        flash[:danger] = "#{INVALID_MSG}#{@msg}"
+        flash[:danger] = "false"
         redirect_to attendances_edit_one_month_user_url(date: params[:date])
       end
     end
@@ -127,7 +123,7 @@ class AttendancesController < ApplicationController
           attendance = Attendance.find(id)
           item[:approval_date] = Time.current
           attendance.update_attributes(item)
-          if item[:change_status] == "否認"
+          if item[:change_status] == "否認" && item[:change_status] == "なし"
             item[:change_approval] = 2
             item[:change_check] = "0"
             item[:approval_date] = nil
@@ -156,23 +152,22 @@ class AttendancesController < ApplicationController
     request_overtime_params.each do |id, item|
       if selected_overtime_superior?
         attendance = Attendance.find(id)
-        attendance.update_attributes(item) unless time_select_invalid?(item)
-          if attendance.next_day == true
+        attendance.update_attributes(item) unless overtime_time_select_invalid?(item)
+          if attendance.next_day == "1"
             next_day_times(@user.designated_work_end_time, attendance.finished_plan_at)
           else
             overworking_times(@user.designated_work_end_time, attendance.finished_plan_at)
           end
         attendance.update_attributes(overtime_hours: @total_time, overtime_superior_name: User.find(item[:overtime_superior_id]).name)
-        
         flash[:success] = "#{attendance.overtime_superior_name}に残業申請を送信しました。"
         redirect_back(fallback_location: root_path)
       else
-        msg_a = "申請先上長を選択してください。" if item[:overtime_superior_id].blank?
+        msg_a = "終了予定時間を入力してください。" if item['finished_plan_at(4i)'].blank? || item['finished_plan_at(5i)'].blank?
         msg_b = "業務処理内容を入力してください。" if item[:business_process_content].blank?
-        flash[:danger] = "#{msg_a}#{msg_b}"
+        msg_c = "申請先上長を選択してください。" if item[:overtime_superior_id].blank?
+        flash[:danger] = "#{msg_a}#{msg_b}#{msg_c}"
         redirect_back(fallback_location: root_path)
       end
-      
     end
   end
   
@@ -186,7 +181,7 @@ class AttendancesController < ApplicationController
       if apply_confirmed_invalid?(item[:overtime_status], item[:overtime_check])
         attendance = Attendance.find(id)
         attendance.update_attributes(item) unless time_select_invalid?(item)
-        if item[:overtime_status] == "否認"
+        if item[:overtime_status] == "否認" && item[:overtime_status] == "なし"
            item[:overtime_apploval] = 2
            item[:overtime_check] = "0"
            attendance.update_attributes(item)
@@ -242,9 +237,7 @@ class AttendancesController < ApplicationController
   
   
   def attendances_params
-    params.require(:user).permit(attendances: [:started_at,
-                                               :finished_at,
-                                               :note,
+    params.require(:user).permit(attendances: [:note,
                                                :changed_started_at,
                                                :changed_finished_at,
                                                :change_next_day,

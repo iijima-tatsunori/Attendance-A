@@ -31,32 +31,37 @@
 
 <% if current_user.superior? && current_user?(@user) %>
   <div class="btn-user-show">
-    
-    
     <p>
-      【所属長勤怠申請のお知らせ】
       <% unless has_month_apply.count == 0 %>
+        <%= link_to "【所属長勤怠申請のお知らせ】", attendances_monthly_confirmation_form_user_path(@user), remote: true, class: "notice-superior1" %>
         <%= link_to "#{has_month_apply.count}件の通知があります", attendances_monthly_confirmation_form_user_path(@user), remote: true, class: "notice-superior" %>
+      <% else %>
+          【所属長勤怠申請のお知らせ】
       <% end %>
     </p>
     
     <p>
-      【勤怠変更申請のお知らせ】
       <% unless has_change_apply.count == 0 %>
+        <%= link_to "【勤怠変更申請のお知らせ】", attendances_change_apply_form_user_path(@user), remote: true, class: "notice-superior1" %>
         <%= link_to "#{has_change_apply.count}件の通知があります", attendances_change_apply_form_user_path(@user), remote: true, class: "notice-superior" %>
+      <% else %>
+        【勤怠変更申請のお知らせ】
       <% end %>
     </p>
     
     <p>
-      【残業申請のお知らせ】
       <% unless has_overtime_apply.count == 0 %>
+        <%= link_to "【残業申請のお知らせ】】", attendances_overtime_superior_reply_user_path(@user), remote: true, class: "notice-superior1" %>
         <%= link_to "#{has_overtime_apply.count}件の通知があります", attendances_overtime_superior_reply_user_path(@user), remote: true, class: "notice-superior" %>
+      <% else %>
+        【残業申請のお知らせ】
       <% end %>
     </p>
     
   </div>
 <% end %>
-<% if current_user.id == @user.id) %>
+
+<% if current_user?(@user) %>
   <%= link_to "勤怠を編集", attendances_edit_one_month_user_path, class: "btn btn-primary" %>
   <%= link_to "CSV出力", user_path(format: :csv), class: "btn btn-primary" %>
     <br>
@@ -100,7 +105,7 @@
     <tbody>
       <% @attendances.each do |day| %>
         <tr>
-          <% if current_user.id == @user.id %>
+          <% if current_user?(@user) %>
             <td><%= link_to "残業申請", attendances_edit_overtime_info_user_path(date: day.worked_on), remote: true, class: "btn btn-primary" if current_user?(@user) %></td>
           <% else %>
             <td></td>
@@ -120,7 +125,7 @@
             <%= $days_of_the_week[day.worked_on.wday] %>
           <% end %>
           </td>
-          <% if current_user.id == @user.id %>
+          <% if current_user?(@user) %>
             <td>
               <% if btn_text = attendance_state(day) %>
                 <%= link_to "#{btn_text}登録", user_attendance_path(@user, day), method: :patch, class: "btn btn-primary btn-attendances "%>
@@ -130,38 +135,65 @@
              <td></td>
           <% end %>
           
-          <td><%= l(day.started_at, format: :hour) if day.started_at.present? %></td>
-          <td><%= l(day.started_at, format: :minute) if day.started_at.present? %></td>
+          <% if day.change_status == "否認" || day.change_status == "なし" || day.change_status == "申請中" %>
           
-          <td><%= l(day.finished_at, format: :hour) if day.finished_at.present? %></td>
-          <td><%= l(day.finished_at, format: :minute) if day.finished_at.present? %></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            
+          <% else %>
           
-          <td>
-          <% if day.started_at.present? && day.finished_at.present? %>
-            <%= str_times = working_times(day.started_at, day.finished_at) %>
-            <% @total_working_times = @total_working_times.to_f + str_times.to_f %>
-          <% end %>
-          </td>
-          
-          <td><%= day.note %></td>
-          
-          
-          <td><%= l(day.finished_plan_at, format: :hour) if day.finished_plan_at.present? %></td>
-          <td><%= l(day.finished_plan_at.floor_to(15.minutes), format: :minute) if day.finished_plan_at.present? %></td>
-          <td>
-            <%= day.overtime_hours.to_d.floor(1).to_f if day.finished_plan_at.present? %>
-          </td>
-          <td><%= day.business_process_content %></td>
-          <td>
-            <% unless day.overtime_status == "申請中" %>
-              <%= "勤怠編集#{day.overtime_status}" if day.overtime_status.present? %>
-            <% else %>
-              <%= "#{day.overtime_superior_name}に申請中" %>
+            <td><%= day.changed_started_at.hour if day.changed_started_at.present? %></td>
+            <td><%= day.changed_started_at.floor_to(15.minutes).strftime("%M") if day.changed_started_at.present? %></td>
+            
+            <td><%= day.changed_finished_at.hour if day.changed_finished_at.present? %></td>
+            <td><%= day.changed_finished_at.floor_to(15.minutes).strftime("%M") if day.changed_finished_at.present? %></td>
+            
+            <td>
+            <% if day.changed_started_at.present? && day.changed_finished_at.present? %>
+              <%= str_times = working_times(day.changed_started_at, day.changed_finished_at) %>
+              <% @total_working_times = @total_working_times.to_f + str_times.to_f %>
             <% end %>
-            <% unless day.change_status == "申請中" %>
-              <%= "勤怠編集#{change_apply_status(day.change_status)}" if day.change_status.present? %>
+            </td>
+            
+          <% end %>
+            
+          <% if day.change_status == "否認" || day.change_status == "なし" || day.change_status == "申請中" %>
+            <td></td>
+          <% else %>
+            <td><%= day.note %></td>
+          <% end %>
+          
+              
+                
+              
+          <% if day.overtime_status == "否認" || day.overtime_status == "なし" || day.overtime_status == "申請中" %>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          <% else %>
+            <td><%= l(day.finished_plan_at, format: :hour) if day.finished_plan_at.present? %></td>
+            <td><%= l(day.finished_plan_at.floor_to(15.minutes), format: :minute) if day.finished_plan_at.present? %></td>
+            <td>
+              <%= day.overtime_hours.to_d.floor(1).to_f if day.finished_plan_at.present? %>
+            </td>
+            <td><%= day.business_process_content %></td>
+          <% end %>
+          
+          <td>
+            <% unless day.change_status == "なし" %>
+              <%= day.change_superior_name %><%= change_status_text(day.change_status) %>
+            <% end %>
+            <% unless day.overtime_status == "申請中" %>
+              <% if day.overtime_status == "なし" %>
+              <% else %>
+                <%= "残業#{day.overtime_status}" if day.overtime_status.present? %>
+              <% end %>
             <% else %>
-              <%= "#{day.change_superior_name}に申請中" %>
+              <%= "#{day.overtime_superior_name}に残業申請中" %>
             <% end %>
           </td>
           
@@ -197,5 +229,4 @@
 <div id="overtime_superior_reply" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
 <div id="monthly_confirmation_form" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
 <div id="change_apply_form" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
-
 

@@ -1,9 +1,9 @@
 require 'csv'
 
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
-  before_action :logged_in_user, only: [:index, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
-  before_action :admin_user, only: [:edit, :update, :index, :destroy, :edit_basic_info, :update_basic_info, :coming]
+  before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :update_basic_info, :basic_edit]
+  before_action :logged_in_user, only: [:index, :edit, :update, :destroy, :edit_basic_info, :coming, :update_basic_info, :basic_edit]
+  before_action :admin_user, only: [:edit, :update, :index, :destroy, :edit_basic_info, :update_basic_info, :coming, :basic_edit]
   before_action :set_one_month, only: :show
   before_action :invalid_admin_user, only: :show
   
@@ -26,29 +26,25 @@ class UsersController < ApplicationController
     @superiors = superior_without_me
     @superiors_all = superior_add_me
     @month = set_one_month_apply
-    
     @worked_sum = @attendances.where.not(started_at: nil).count
-    @csv_export = @user.attendances.where(change_approval: 3).order(:worked_on)
     respond_to do |format|
       format.html
       format.csv do |csv|
-        send_attendances_csv(@csv_export)
+        send_attendances_csv(@attendances)
       end
     end
+    
   end
   
-  def send_attendances_csv(csv_export)
+  def send_attendances_csv(attendances)
     csv_data = CSV.generate do |csv|
-      header = %w(日付 変更前出社時間 変更前退社時間 変更後出社時間 変更後退社時間 承認者)
+      header = %w(日付 出社時間 退社時間)
       csv << header
 
-      @csv_export.each do |attendance|
-        values = [attendance.worked_on,
-                  attendance.started_at&.strftime("%R"),
-                  attendance.finished_at&.strftime("%R"),
-                  attendance.changed_started_at&.strftime("%R"),
-                  attendance.changed_finished_at&.strftime("%R"),
-                  attendance.change_superior_name
+      @attendances.each do |day|
+        values = [l(day.worked_on, format: :short),
+                  (day.changed_started_at.floor_to(15.minutes)&.strftime("%R") if day.changed_started_at.present? && day.change_status != "申請中" && day.change_status != "否認" && day.change_status != "なし" && day.status != "なし"),
+                  (day.changed_finished_at.floor_to(15.minutes)&.strftime("%R") if day.changed_finished_at.present? && day.change_status != "申請中" && day.change_status != "否認" && day.change_status != "なし" && day.status != "なし")
                   ]
         csv << values
       end
@@ -114,6 +110,9 @@ class UsersController < ApplicationController
   
   def coming
     @in_working_users = User.in_working_users
+  end
+  
+  def basic_edit
   end
   
   

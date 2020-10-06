@@ -20,6 +20,7 @@ module AttendancesHelper
       "未"
     end
   end
+  
   def apply_btn_status(status)
     case status
       when "申請中"
@@ -30,6 +31,20 @@ module AttendancesHelper
         "再申請"
     else
       "申請"
+    end
+  end
+  
+  # 勤怠変更申請のステータス表示
+  def change_status_text(status)
+    case status
+    when "申請中"
+      "に勤怠編集申請中"
+    when "否認"
+      "に勤怠編集否認"
+    when "承認"
+      "に勤怠編集承認︎︎"
+    when "なし"
+    else
     end
   end
   
@@ -77,6 +92,9 @@ module AttendancesHelper
     item[:change_superior_id].present? && item["started_at(4i)"] == "" && item["started_at(5i)"] == "" && item["finished_at(4i)"] == "" && item["finished_at(5i)"] == ""
   end
   
+  def overtime_time_select_invalid?(item)
+    item[:overtime_superior_id].present? && item["finished_plan_at(4i)"] == "" && item["finished_plan_at(5i)"] == "" 
+  end
   
   def attendances_invalid?
     attendances = true
@@ -173,17 +191,16 @@ module AttendancesHelper
   def selected_overtime_superior?
     superior = true
     request_overtime_params.each do |id, item|
-      if item[:business_process_content].blank? || item[:overtime_superior_id].blank?
+      if item[:business_process_content].blank? || item[:overtime_superior_id].blank? || item["finished_plan_at(4i)"] == "" || item["finished_plan_at(5i)"] == "" 
         superior = false
-      elsif item[:business_process_content].present? && item[:overtime_superior_id].present?
-        superior = true
+        break
       end
     end
-    superior
+    return superior
   end
   
   def apply_confirmed_invalid?(status, check)
-    if (status == "承認" || status == "否認") && check == "1"
+    if (status == "承認" || status == "否認" || status == "なし") && check == "1"
       confirmed = true
     else
       confirmed = false

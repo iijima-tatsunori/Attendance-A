@@ -34,7 +34,7 @@
                       <tr>
                         <td class="center"><%= attendance.month_apply.strftime("%-m月") %></td>
                         <td class="center">
-                          <%= at.select :status, ["なし", "申請中", "承認", "否認"], {}, class: "form_control" %>
+                          <%= at.select :status, ["なし", "申請中", "承認", "否認"], class: "form_control" %>
                         </td>
                         <td class="center">
                             <%= at.check_box :month_check %>
