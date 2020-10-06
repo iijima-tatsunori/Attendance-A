@@ -36,7 +36,7 @@ User.create!(name: "上長2",
              uid: 3,
              superior: true)
 
-User.create!(name: "一般",
+User.create!(name: "一般A",
              email: "generala@email.com",
              password: "password",
              password_confirmation: "password",
@@ -44,18 +44,12 @@ User.create!(name: "一般",
              employee_number: 4,
              uid: 4)
              
-User.create!(name: "一般A",
+User.create!(name: "一般B",
              email: "generalb@email.com",
              password: "password",
              password_confirmation: "password",
              affiliation: "フリーランス部",
              employee_number: 5,
              uid: 5)
-User.create!(name: "一般B",
-             email: "generalc@email.com",
-             password: "password",
-             password_confirmation: "password",
-             affiliation: "フリーランス部",
-             employee_number: 6,
-             uid: 6)
+
 
