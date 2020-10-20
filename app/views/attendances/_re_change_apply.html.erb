@@ -11,7 +11,7 @@
             
               <% attendances = Attendance.where(user_id: user.id).where(change_status: "申請中") %>
               <% attendances.each do |attendance| %>
-                <% if attendance.change_superior_id == current_user.id && attendance.change_approval == 2 %>
+                <% if attendance.change_superior_id == current_user.id && attendance.change_approval == 2 && @user.id == user.id && @date == attendance.worked_on %>
                   <h3 class="center">【<%= user.name %>からの勤怠変更申請】</h3>
                   <table class="table table-condensed table-bordered table-hover">
                     <thead>

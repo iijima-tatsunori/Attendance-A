@@ -124,10 +124,12 @@
             
               <td><%= day.note %></td>
             
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td><%= l(day.finished_plan_at, format: :hour) if day.finished_plan_at.present? %></td>
+              <td><%= l(day.finished_plan_at.floor_to(15.minutes), format: :minute) if day.finished_plan_at.present? %></td>
+              <td>
+                <%= day.overtime_hours.to_d.floor(1).to_f if day.finished_plan_at.present? %>
+              </td>
+              <td><%= day.business_process_content %></td>
           
           <td>
             <% unless day.change_status == "なし" %>
