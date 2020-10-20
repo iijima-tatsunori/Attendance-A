@@ -105,15 +105,7 @@
           <% end %>
           </td>
           <td></td>
-          <% unless day.change_status == "否認" || day.change_status == "なし" || day.change_status == "申請中" %>
           
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            
-          <% else %>
             
               <td><%= day.changed_started_at.hour if day.changed_started_at.present? %></td>
               <td><%= day.changed_started_at.floor_to(15.minutes).strftime("%M") if day.changed_started_at.present? %></td>
@@ -128,16 +120,10 @@
               <% end %>
               </td>
             
-          <% end %>
-            
-          <% if day.change_status == "否認" || day.change_status == "なし" %>
-            <td></td>
-          <% else %>
+          
             
               <td><%= day.note %></td>
             
-          <% end %>
-          
             <td></td>
             <td></td>
             <td></td>
@@ -145,9 +131,15 @@
           
           <td>
             <% unless day.change_status == "なし" %>
-              
-                <%= day.change_superior_name %><%= change_status_text(day.change_status) %>
-             
+              <%= day.change_superior_name %><%= change_status_text(day.change_status) %>
+            <% end %>
+            <% unless day.overtime_status == "申請中" %>
+              <% if day.overtime_status == "なし" %>
+              <% else %>
+                <%= "残業#{day.overtime_status}" if day.overtime_status.present? %>
+              <% end %>
+            <% else %>
+              <%= "#{day.overtime_superior_name}に残業申請中" %>
             <% end %>
           </td>
           
@@ -161,7 +153,11 @@
         <th colspan="5">総合勤務時間</th>
         <th>累計在社時間</th>
         <td colspan="5", rowspan="2"></td>
-        <td rowspan="2"></td>
+        <td rowspan="2">
+          <div class="application-form">
+            <%= render 'month_apply_form' %>
+          </div>
+        </td>
       </tr>
       <tr>
         <td></td>

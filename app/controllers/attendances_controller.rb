@@ -283,7 +283,7 @@ class AttendancesController < ApplicationController
   end
   
   def re_request_overtime_reply
-    re_reply_overtime_params.each do |id, item|
+    reply_overtime_params.each do |id, item|
       if apply_confirmed_invalid?(item[:overtime_status], item[:overtime_check])
         attendance = Attendance.find(id)
         attendance.update_attributes(item) unless time_select_invalid?(item)

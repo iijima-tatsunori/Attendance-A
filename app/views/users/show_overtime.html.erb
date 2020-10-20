@@ -39,7 +39,7 @@
           
           <p>【残業申請のお知らせ】
             <% unless has_change_apply.count == 0 %>
-              <%= link_to "残業申請の承認", attendances_re_overtime_superior_reply_user_path(date: @date), class: "btn btn-primary" %>
+              <%= link_to "残業申請の承認", attendances_re_overtime_superior_reply_user_path(date: @date), remote: true, class: "btn btn-primary" %>
             <% else %>
             <% end %>
           </p>
@@ -91,7 +91,7 @@
       <% @attendances.each do |day| %>
         <tr>
           <% if current_user?(@user) %>
-            <td><%= link_to "残業申請", attendances_edit_overtime_info_user_path(date: day.worked_on), remote: true, class: "btn btn-primary" if current_user?(@user) %></td>
+            <td><%= link_to "残業申請", attendances_re_overtime_superior_reply_user_path(date: day.worked_on), remote: true, class: "btn btn-primary" %></td>
           <% else %>
             <td></td>
           <% end %>
@@ -120,16 +120,6 @@
              <td></td>
           <% end %>
           
-          <% if day.change_status == "否認" || day.change_status == "なし" || day.change_status == "申請中" %>
-          
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            
-          <% else %>
-          
             <td><%= day.changed_started_at.hour if day.changed_started_at.present? %></td>
             <td><%= day.changed_started_at.floor_to(15.minutes).strftime("%M") if day.changed_started_at.present? %></td>
             
@@ -143,31 +133,22 @@
             <% end %>
             </td>
             
-          <% end %>
             
-          <% if day.change_status == "否認" || day.change_status == "なし" || day.change_status == "申請中" %>
-            <td></td>
-          <% else %>
+          
             <td><%= day.note %></td>
-          <% end %>
+          
           
               
                 
               
-          <% if day.overtime_status == "否認" || day.overtime_status == "なし" %>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          <% else %>
+          
               <td><%= l(day.finished_plan_at, format: :hour) if day.finished_plan_at.present? %></td>
               <td><%= l(day.finished_plan_at.floor_to(15.minutes), format: :minute) if day.finished_plan_at.present? %></td>
               <td>
                 <%= day.overtime_hours.to_d.floor(1).to_f if day.finished_plan_at.present? %>
               </td>
               <td><%= day.business_process_content %></td>
-            
-          <% end %>
+          
           
           <td>
             <% unless day.change_status == "なし" %>

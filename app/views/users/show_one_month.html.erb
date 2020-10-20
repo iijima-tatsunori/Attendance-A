@@ -36,7 +36,7 @@
       <p>
         【所属長勤怠申請のお知らせ】
         <% unless has_month_apply.count == 0 %>
-          <%= link_to "【所属長勤怠申請の承認】", attendances_re_monthly_confirmation_form_user_path, remote: true, class: "btn btn-primary" %>
+          <%= link_to "【所属長勤怠申請の承認】", attendances_re_monthly_confirmation_form_user_path(@user), remote: true, class: "btn btn-primary" %>
         <% else %>
             
         <% end %>

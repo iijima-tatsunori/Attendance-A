@@ -11,23 +11,23 @@
             
               <% attendances = Attendance.where(user_id: user.id).where(overtime_status: "申請中") %>
               <% attendances.each do |attendance| %>
-              <% if attendance.overtime_superior_id == current_user.id && attendance.overtime_apploval == 2 %>
-                <h3 class="center">【<%= user.name %>からの残業申請】</h3>
-                <table class="table table-condensed table-bordered  table-hover">
-                  <thead>
-                    <tr>
-                      <th class="center">日付</th>
-                      <th class="center">曜日</th>
-                      <th class="center">終了予定時間</th>
-                      <th class="center">指定勤務終了時間</th>
-                      <th class="center">時間外時間</th>
-                      <th class="center">業務処理内容</th>
-                      <th class="center">指示者確認<%= "\u329e" %></th>
-                      <th class="center">変更</th>
-                    </tr>
-                  </thead>
-              <% break %>
-              <% end %>
+                <% if attendance.overtime_superior_id == current_user.id && attendance.overtime_apploval == 2 && @user.id == user.id %>
+                  <h3 class="center">【<%= user.name %>からの残業申請】</h3>
+                  <table class="table table-condensed table-bordered  table-hover">
+                    <thead>
+                      <tr>
+                        <th class="center">日付</th>
+                        <th class="center">曜日</th>
+                        <th class="center">終了予定時間</th>
+                        <th class="center">指定勤務終了時間</th>
+                        <th class="center">時間外時間</th>
+                        <th class="center">業務処理内容</th>
+                        <th class="center">指示者確認<%= "\u329e" %></th>
+                        <th class="center">変更</th>
+                      </tr>
+                    </thead>
+                <% break %>
+                <% end %>
               <% end %>
                 
               <% attendances = Attendance.where(user_id: user.id).where(overtime_status: "申請中").merge(Attendance.order("attendances.worked_on ASC")) %>

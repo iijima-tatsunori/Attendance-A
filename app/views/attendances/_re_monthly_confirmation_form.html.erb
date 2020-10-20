@@ -11,7 +11,7 @@
             
               <% attendances = Attendance.where(user_id: user.id).where(status: "申請中") %>
               <% attendances.each do |attendance| %>
-                <% if attendance.month_apply.present? && attendance.superior_id == current_user.id && attendance.month_approval == 2 %>
+                <% if attendance.month_apply.present? && attendance.superior_id == current_user.id && attendance.month_approval == 2 && @user.id == user.id %>
                   <h3 class="center">【<%= user.name %>からの1ヶ月分の勤怠申請】</h3>
                   <table class="table table-condensed table-bordered table-hover">
                     <thead>
@@ -27,7 +27,7 @@
               
               <% attendances = Attendance.where(user_id: user.id).where(status: "申請中").merge(Attendance.order("attendances.worked_on DESC")) %>
               <% attendances.each do |attendance| %>
-                <% if attendance.month_apply.present? && attendance.superior_id == current_user.id && attendance.month_approval == 2 %>
+                <% if attendance.month_apply.present? && attendance.superior_id == current_user.id && attendance.month_approval == 2 && @user.id == user.id %>
                   <%= fields_for "attendances[]", attendance do |at| %>
                     <tbody>
                       <tr>
