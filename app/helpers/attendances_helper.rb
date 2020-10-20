@@ -141,8 +141,12 @@ module AttendancesHelper
   
   
   
-  def working_times(start, finish)
-    format("%.2f", (((finish - start) / 60) / 60.0))
+  def working_times(start, finish, next_day)
+    if next_day == "1"
+      format("%.2f", (((finish.hour + 24) - start.hour) + (finish.min - start.min) / 60.0))
+    else
+      format("%.2f", (((finish - start) / 60) / 60.0))
+    end
   end
   
   def next_day_times(finish, finished_plan)
@@ -180,6 +184,7 @@ module AttendancesHelper
   def has_change_apply
     User.joins(:attendances).where(attendances: {change_superior_id: current_user.id}).where(attendances: {change_status: "申請中"})
   end
+  
   
   
   

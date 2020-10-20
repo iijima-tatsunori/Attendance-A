@@ -19,7 +19,6 @@
                         <th class="center">月</th>
                         <th class="center">指示者確認<%= "\u329e" %></th>
                         <th class="center">変更</th>
-                        <th class="center">勤怠を確認する</th>
                       </tr>
                     </thead>
                 <% break %>
@@ -39,9 +38,6 @@
                         <td class="center">
                             <%= at.check_box :month_check %>
                             <%= at.hidden_field :month_approval, value: 3 %>
-                        </td>
-                        <td class="center">
-                            <%= link_to "確認", show_one_month_user_path(id: user.id, date: attendance.worked_on), class: "btn btn-primary" %>
                         </td>
                       </tr>
                     </tbody>

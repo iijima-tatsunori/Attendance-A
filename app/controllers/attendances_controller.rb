@@ -3,12 +3,14 @@ class AttendancesController < ApplicationController
   before_action :set_user, only: [:edit_one_month, :update_one_month, :edit_overtime_info,
                                   :request_month_apply, :request_overtime, :overtime_superior_reply,
                                   :request_overtime_reply, :monthly_confirmation_form, :apply_monthly_confirmation,
-                                  :change_apply_form, :reply_change_apply, :attendance_log]
+                                  :change_apply_form, :reply_change_apply, :attendance_log, :re_change_apply, :re_reply_change_apply,
+                                  :re_overtime_superior_reply, :re_request_overtime_reply, :re_monthly_confirmation_form, :re_apply_monthly_confirmation]
                                   
   before_action :logged_in_user, only: [:update, :edit_one_month, :edit_overtime_info, :request_overtime]
   
-  before_action :set_one_month, only: [:edit_one_month, :edit_overtime_info, :request_overtime, :attendance_log]
-  
+  before_action :set_one_month, only: [:edit_one_month, :edit_overtime_info, :request_overtime, :attendance_log, :re_change_apply, :re_reply_change_apply,
+                                       :re_overtime_superior_reply, :re_request_overtime_reply]
+                                       
   before_action :invalid_admin_user, only: [:update, :edit_one_month, :request_month_apply, :update_one_month, :edit_overtime_info,
                                             :request_month_apply, :request_overtime, :overtime_superior_reply,
                                             :request_overtime_reply, :monthly_confirmation_form, :apply_monthly_confirmation,
@@ -82,6 +84,41 @@ class AttendancesController < ApplicationController
   end
   
   
+  
+  
+  
+  def re_monthly_confirmation_form
+    @users = monthly_applying_employee
+    if params[:date]
+      @date = Date.parse(params[:date])
+    else 
+      @date = Date.today
+    end
+  end
+  
+  def re_apply_monthly_confirmation
+    month_reply_params.each do |id, item|
+      if apply_confirmed_invalid?(item[:status], item[:month_check])
+      attendance = Attendance.find(id)
+      attendance.update_attributes(item)
+        if item[:status] == "否認" && item[:status] == "なし"
+          item[:month_approval] = 2
+          item[:month_check] = "0"
+          attendance.update_attributes(item)
+        end
+      end
+    end
+    flash[:success] = "１ヶ月勤怠申請の決済を更新しました。"
+    redirect_to user_url
+  rescue ActiveRecord::RecordInvalid
+    flash[:danger] = "エラーが発生した為、１ヶ月勤怠申請の更新がキャンセルされました。"
+    redirect_back(fallback_location: root_path)
+  end
+  
+  
+  
+  
+  
   # 勤怠変更申請
   def edit_one_month
     @superiors = superior_without_me
@@ -116,6 +153,8 @@ class AttendancesController < ApplicationController
     @users = change_apply_employee
   end
   
+  
+  
   def reply_change_apply
     ActiveRecord::Base.transaction do
       change_reply_params.each do |id, item|
@@ -135,6 +174,40 @@ class AttendancesController < ApplicationController
     
     flash[:success] = "勤怠変更の決裁を更新しました。"
     redirect_to user_path(date: params[:date])
+  rescue ActiveRecord::RecordInvalid
+    flash[:danger] = "エラーが発生した為、更新がキャンセルされました。"
+    redirect_to root_path
+  end
+  
+  def re_change_apply
+    @users = change_apply_employee
+    if params[:date]
+      @date = Date.parse(params[:date])
+    else 
+      @date = Date.today
+    end
+  end
+  
+  def re_reply_change_apply
+    @id = @user.attendances.where(change_superior_id: 2)
+    ActiveRecord::Base.transaction do
+      change_reply_params.each do |id, item|
+        if apply_confirmed_invalid?(item[:change_status], item[:change_check])
+          attendance = Attendance.find(id)
+          item[:approval_date] = Time.current
+          attendance.update_attributes(item)
+          if item[:change_status] == "否認" && item[:change_status] == "なし"
+            item[:change_approval] = 2
+            item[:change_check] = "0"
+            item[:approval_date] = nil
+            attendance.update_attributes(item)
+          end
+        end
+      end
+    end
+    
+    flash[:success] = "勤怠変更の決裁を更新しました。"
+    redirect_to user_url(current_user)
   rescue ActiveRecord::RecordInvalid
     flash[:danger] = "エラーが発生した為、更新がキャンセルされました。"
     redirect_to root_path
@@ -174,10 +247,43 @@ class AttendancesController < ApplicationController
   
   def overtime_superior_reply
     @users = overtime_applying_employee
+    if params[:date]
+      @date = Date.parse(params[:date])
+    else 
+      @date = Date.today
+    end
   end
   
   def request_overtime_reply
     reply_overtime_params.each do |id, item|
+      if apply_confirmed_invalid?(item[:overtime_status], item[:overtime_check])
+        attendance = Attendance.find(id)
+        attendance.update_attributes(item) unless time_select_invalid?(item)
+        if item[:overtime_status] == "否認" && item[:overtime_status] == "なし"
+           item[:overtime_apploval] = 2
+           item[:overtime_check] = "0"
+           attendance.update_attributes(item)
+        end
+      end
+    end
+    flash[:success] = "残業申請を返信しました。"
+    redirect_to @user
+  rescue ActiveRecord::RecordInvalid
+    flash[:danger] = "エラーが発生した為、残業申請の変更がキャンセルされました。"
+    redirect_to root_path
+  end
+  
+  def re_overtime_superior_reply
+    @users = overtime_applying_employee
+    if params[:date]
+      @date = Date.parse(params[:date])
+    else 
+      @date = Date.today
+    end
+  end
+  
+  def re_request_overtime_reply
+    re_reply_overtime_params.each do |id, item|
       if apply_confirmed_invalid?(item[:overtime_status], item[:overtime_check])
         attendance = Attendance.find(id)
         attendance.update_attributes(item) unless time_select_invalid?(item)
@@ -254,6 +360,10 @@ class AttendancesController < ApplicationController
     params.permit(attendances: [:change_status, :change_approval, :change_check])[:attendances]
   end
   
+  def re_change_reply_params
+    params.require(:user).permit(attendances: [:change_status, :change_approval, :change_check])[:attendances]
+  end
+  
   def request_overtime_params
     params.require(:user).permit(attendances: [:finished_plan_at,
                                                :business_process_content,
@@ -270,6 +380,7 @@ class AttendancesController < ApplicationController
                                                :overtime_apploval,
                                                :overtime_check])[:attendances]
   end
+  
   
   # beforeフィルター
   

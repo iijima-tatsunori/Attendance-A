@@ -6,7 +6,7 @@
       </button>
       <div class="row">
         <div class="col-md-12">
-          <%= form_with(model: @user, url: attendances_request_overtime_reply_user_path(@user), load: true, method: :patch) do |f| %>
+          <%= form_with(model: @user, url: attendances_request_overtime_reply_user_path(current_user, date: @first_day), load: true, method: :patch) do |f| %>
             <% @users.each do |user| %>
             
               <% attendances = Attendance.where(user_id: user.id).where(overtime_status: "申請中") %>
@@ -24,7 +24,6 @@
                       <th class="center">業務処理内容</th>
                       <th class="center">指示者確認<%= "\u329e" %></th>
                       <th class="center">変更</th>
-                      <th class="center">勤怠を確認する</th>
                     </tr>
                   </thead>
               <% break %>
@@ -33,7 +32,7 @@
                 
               <% attendances = Attendance.where(user_id: user.id).where(overtime_status: "申請中").merge(Attendance.order("attendances.worked_on ASC")) %>
               <% attendances.each do |attendance| %>
-                <% if attendance.overtime_superior_id == current_user.id && attendance.overtime_apploval == 2 %>
+                <% if attendance.overtime_superior_id == current_user.id && attendance.overtime_apploval == 2 && @date == attendance.worked_on %>
                 
                   <%= f.fields_for "attendances[]", attendance do |at| %>
                     <tbody>
@@ -56,7 +55,6 @@
                           <%= at.check_box :overtime_check %>
                           <%= at.hidden_field :overtime_apploval, value: 3 %>
                         </td>
-                        <td class="center"><%= link_to "確認", show_overtime_user_path(id: user.id, date: attendance.worked_on), class: "btn btn-primary" %></td>
                       </tr>
                     </tbody>
                   <% end %>

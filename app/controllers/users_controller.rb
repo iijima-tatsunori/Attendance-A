@@ -1,11 +1,15 @@
 require 'csv'
 
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :update_basic_info, :basic_edit]
+  before_action :set_user, only: [:show, :show_change,:show_overtime, :show_one_month,
+                                  :edit, :update, :destroy, :edit_basic_info, :update_basic_info, :basic_edit]
+                                  
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy, :edit_basic_info, :coming, :update_basic_info, :basic_edit]
   before_action :admin_user, only: [:edit, :update, :index, :destroy, :edit_basic_info, :update_basic_info, :coming, :basic_edit]
-  before_action :set_one_month, only: :show
-  before_action :invalid_admin_user, only: :show
+  before_action :set_one_month, only: [:show, :show_one_month]
+  before_action :re_set_one_month, only: [:show_change, :show_overtime]
+  before_action :invalid_admin_user, only: [:show, :show_change, :show_overtime, :show_one_month]
+  before_action :uncorrect_user, only: [:show_change, :show_overtime, :show_one_month]
   
   def new
     @user = User.new
@@ -27,14 +31,65 @@ class UsersController < ApplicationController
     @superiors_all = superior_add_me
     @month = set_one_month_apply
     @worked_sum = @attendances.where.not(started_at: nil).count
+    
     respond_to do |format|
       format.html
       format.csv do |csv|
         send_attendances_csv(@attendances)
       end
     end
-    
   end
+  
+  def show_change
+    @superiors = superior_without_me
+    @users = change_apply_employee
+    @superiors_all = superior_add_me
+    @month = set_one_month_apply
+    @worked_sum = @attendances.where.not(started_at: nil).count
+    if params[:date]
+      @date = Date.parse(params[:date])
+    else 
+      @date = Date.today
+    end
+  end
+  
+  def show_overtime
+    @superiors = superior_without_me
+    @users = overtime_applying_employee
+    @superiors_all = superior_add_me
+    @month = set_one_month_apply
+    @worked_sum = @attendances.where.not(started_at: nil).count
+    if params[:date]
+      @date = Date.parse(params[:date])
+    else 
+      @date = Date.today
+    end
+  end
+  
+  def show_one_month
+    @superiors = superior_without_me
+    @users = monthly_applying_employee
+    @superiors_all = superior_add_me
+    @month = set_one_month_apply
+    @worked_sum = @attendances.where.not(started_at: nil).count
+    if params[:date]
+      @date = Date.parse(params[:date])
+    else 
+      @date = Date.today
+    end
+  end
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   def send_attendances_csv(attendances)
     csv_data = CSV.generate do |csv|

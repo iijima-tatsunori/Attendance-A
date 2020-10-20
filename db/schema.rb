@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20201002131823) do
+ActiveRecord::Schema.define(version: 20201008053351) do
 
   create_table "attendances", force: :cascade do |t|
     t.date "worked_on"
@@ -30,7 +30,7 @@ ActiveRecord::Schema.define(version: 20201002131823) do
     t.string "overtime_status"
     t.integer "overtime_apploval", default: 1
     t.string "overtime_detail"
-    t.string "overtime_check", default: "0"
+    t.string "overtime_check", default: "1"
     t.integer "overtime_superior_id"
     t.integer "superior_id"
     t.string "status"
@@ -42,10 +42,10 @@ ActiveRecord::Schema.define(version: 20201002131823) do
     t.datetime "changed_started_at"
     t.datetime "changed_finished_at"
     t.string "change_next_day", default: "0"
-    t.integer "change_superior_id", default: 1
+    t.integer "change_superior_id"
     t.string "change_status"
     t.string "change_check", default: "0"
-    t.integer "change_approval"
+    t.integer "change_approval", default: 1
     t.date "calendar_day"
     t.datetime "approval_date"
     t.index ["user_id"], name: "index_attendances_on_user_id"
@@ -68,14 +68,14 @@ ActiveRecord::Schema.define(version: 20201002131823) do
     t.string "remember_digest"
     t.boolean "admin", default: false
     t.string "department"
-    t.datetime "basic_time", default: "2020-07-18 23:00:00"
-    t.datetime "work_time", default: "2020-07-18 22:30:00"
+    t.datetime "basic_time", default: "2020-10-11 23:00:00"
+    t.datetime "work_time", default: "2020-10-11 22:30:00"
     t.string "affiliation"
     t.integer "employee_number"
-    t.integer "uid"
-    t.datetime "basic_work_time", default: "2020-07-18 23:00:00"
-    t.datetime "designated_work_start_time", default: "2020-07-19 01:00:00"
-    t.datetime "designated_work_end_time", default: "2020-07-19 09:00:00"
+    t.string "uid"
+    t.datetime "basic_work_time", default: "2020-10-11 23:00:00"
+    t.datetime "designated_work_start_time", default: "2020-10-12 01:00:00"
+    t.datetime "designated_work_end_time", default: "2020-10-12 09:00:00"
     t.boolean "superior", default: false
     t.index ["email"], name: "index_users_on_email", unique: true
   end

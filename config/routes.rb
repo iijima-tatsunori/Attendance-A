@@ -15,6 +15,12 @@ Rails.application.routes.draw do
   resources :users do
     
     member do
+      
+      get 'show_change'
+      get 'show_overtime'
+      get 'show_one_month'
+      
+      
       get 'edit_basic_info'
       patch 'update_basic_info'
       
@@ -27,6 +33,8 @@ Rails.application.routes.draw do
       # 勤怠申請変更承認
       get 'attendances/change_apply_form'
       patch 'attendances/reply_change_apply'
+      get 'attendances/re_change_apply'
+      patch 'attendances/re_reply_change_apply'
       
       # 上長に１ヶ月の勤怠申請
       patch 'attendances/request_month_apply'
@@ -34,6 +42,8 @@ Rails.application.routes.draw do
        # 申請された１ヶ月の勤怠承認画面
       get 'attendances/monthly_confirmation_form'
       patch 'attendances/apply_monthly_confirmation'
+      get 'attendances/re_monthly_confirmation_form'
+      patch 'attendances/re_apply_monthly_confirmation'
       
       get 'attendances/attendance_log'
       
@@ -44,6 +54,10 @@ Rails.application.routes.draw do
       
       get 'attendances/overtime_superior_reply'
       patch 'attendances/request_overtime_reply'
+      
+      get 'attendances/re_overtime_superior_reply'
+      patch 'attendances/re_request_overtime_reply'
+      
     end
     
     collection do
