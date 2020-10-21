@@ -38,7 +38,7 @@
           <p>【勤怠変更申請のお知らせ】</p>
           
           <p>【残業申請のお知らせ】
-            <% unless has_change_apply.count == 0 %>
+            <% unless has_overtime_apply.count == 0 %>
               <%= link_to "残業申請の承認", attendances_re_overtime_superior_reply_user_path(date: @date), remote: true, class: "btn btn-primary" %>
             <% else %>
             <% end %>
